@@ -378,6 +378,14 @@
             background-color: #0369a1;
         }
 
+        button.btn-firebase-sync {
+            background-color: #ff9800;
+        }
+
+        button.btn-firebase-sync:hover {
+            background-color: #f57c00;
+        }
+
         button.btn-export {
             background-color: #059669;
             margin-left: auto;
@@ -677,7 +685,7 @@
         
         <div class="upload-container" id="dropZone">
             <label class="file-input-label" for="fileInput" id="uploadLabel">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 2 2h12a2 2 0 0 2 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                 <span>Click to Select or Drag & Drop Multiple SAP Files (.xls / .txt / .csv) Here</span>
                 <span class="sub-text">Supports Stock, Batch Size, Planned Orders, Last Mfg Batch, & Code Mapping Master Files</span>
             </label>
@@ -706,6 +714,12 @@
             <button class="btn-refresh" onclick="reloadUploadedFiles()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
                 Reload & Refresh Data
+            </button>
+
+            <!-- Firebase Sync Button -->
+            <button class="btn-firebase-sync" onclick="saveToFirebase()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Save to Cloud (Firebase)
             </button>
 
             <!-- Export Button -->
@@ -781,9 +795,93 @@
     </div>
 </div>
 
+<!-- FIREBASE SDK INCLUSION (V9 / V10 COMPATIBILITY) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // TODO: REPLACE THIS WITH YOUR FIREBASE PROJECT CONFIGURATION
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Make database instances globally available
+    window.firebaseDb = database;
+    window.dbRef = ref;
+    window.dbSet = set;
+    window.dbGet = get;
+    window.dbChild = child;
+    window.dbOnValue = onValue;
+
+    // Load data from Firebase on startup automatically
+    window.addEventListener('DOMContentLoaded', () => {
+        loadFromFirebase();
+    });
+</script>
+
 <script>
 let generatedReportRows = [];
 let cachedFileContents = [];
+
+// SAVE DATA TO FIREBASE CLOUD
+function saveToFirebase() {
+    if (!window.firebaseDb) {
+        alert("Firebase is initializing or configuration is missing. Please update your firebaseConfig credentials in the code.");
+        return;
+    }
+
+    if (generatedReportRows.length === 0) {
+        alert("Pehle data process ya upload kijiye! No data to save.");
+        return;
+    }
+
+    const timestamp = new Date().getTime();
+    const payload = {
+        lastUpdated: new Date().toISOString(),
+        data: generatedReportRows
+    };
+
+    window.dbSet(window.dbRef(window.firebaseDb, 'ppic_reports/latest'), payload)
+        .then(() => {
+            alert("✅ Dynamic Report Matrix saved to Firebase Cloud successfully!");
+        })
+        .catch((error) => {
+            console.error("Firebase save error:", error);
+            alert("❌ Firebase Error: " + error.message);
+        });
+}
+
+// FETCH DATA FROM FIREBASE CLOUD
+function loadFromFirebase() {
+    if (!window.firebaseDb) return;
+
+    const dbRef = window.dbRef(window.firebaseDb);
+    window.dbGet(window.dbChild(dbRef, 'ppic_reports/latest')).then((snapshot) => {
+        if (snapshot.exists()) {
+            const val = snapshot.val();
+            if (val && val.data) {
+                generatedReportRows = val.data;
+                updateTableFilterDropdowns();
+                renderTable();
+                console.log("Firebase sync successful. Loaded rows:", generatedReportRows.length);
+            }
+        } else {
+            console.log("No data available in Firebase.");
+        }
+    }).catch((error) => {
+        console.error("Error pulling data from Firebase:", error);
+    });
+}
 
 // THEME SWITCHER FUNCTION
 function changeTheme(themeName) {
