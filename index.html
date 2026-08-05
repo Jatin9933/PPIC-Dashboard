@@ -71,6 +71,21 @@
             color: var(--text-muted);
         }
 
+        /* Last Updated Badge Styling */
+        .last-update-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            background: rgba(37, 99, 235, 0.08);
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
         .controls-section {
             display: flex;
             gap: 10px;
@@ -181,9 +196,12 @@
         <div class="title-section">
             <h1>PPIC - Unified Material Control Matrix</h1>
             <p>Dynamic Reorder Analytics & Production Planning Automation</p>
+            <!-- Last Update Date & Time Indicator -->
+            <div id="lastUpdateIndicator" class="last-update-badge">
+                🕒 Last Updated: <span id="lastUpdateTimeText">Not Loaded Yet</span>
+            </div>
         </div>
         <div class="controls-section">
-            <!-- Firebase Date Picker & Fetch Button Added Here -->
             <input type="date" id="firebaseDatePicker" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
             <button class="btn btn-primary" onclick="fetchReportByDate()">📅 Fetch by Date</button>
             <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save to Cloud</button>
@@ -298,6 +316,27 @@
 let generatedReportRows = [];
 let cachedFileContents = [];
 
+// HELPER FUNCTION TO UPDATE LAST UPDATED UI
+function updateLastModifiedTimeDisplay(isoString) {
+    const textSpan = document.getElementById('lastUpdateTimeText');
+    if (!textSpan) return;
+
+    if (!isoString) {
+        textSpan.innerText = "Just Now (" + new Date().toLocaleString() + ")";
+        return;
+    }
+
+    const dateObj = new Date(isoString);
+    if (!isNaN(dateObj.getTime())) {
+        textSpan.innerText = dateObj.toLocaleString('en-US', { 
+            month: 'short', day: 'numeric', year: 'numeric', 
+            hour: '2-digit', minute: '2-digit', second: '2-digit' 
+        });
+    } else {
+        textSpan.innerText = isoString;
+    }
+}
+
 // FETCH DATA FOR SPECIFIC DATE FROM FIREBASE
 function fetchReportByDate() {
     const selectedDate = document.getElementById('firebaseDatePicker').value;
@@ -320,6 +359,7 @@ function fetchReportByDate() {
                 generatedReportRows = val.data;
                 updateTableFilterDropdowns();
                 renderTable();
+                updateLastModifiedTimeDisplay(val.lastUpdated);
                 alert(`✅ Successfully loaded report for date: ${selectedDate}`);
             } else {
                 alert(`⚠️ Data format invalid for date: ${selectedDate}`);
@@ -346,9 +386,10 @@ function saveToFirebaseWithDate() {
         return;
     }
 
+    const currentTimestampISO = new Date().toISOString();
     const todayDateStr = new Date().toISOString().slice(0, 10);
     const payload = {
-        lastUpdated: new Date().toISOString(),
+        lastUpdated: currentTimestampISO,
         data: generatedReportRows
     };
 
@@ -359,6 +400,7 @@ function saveToFirebaseWithDate() {
         window.dbSet(latestRef, payload),
         window.dbSet(historyRef, payload)
     ]).then(() => {
+        updateLastModifiedTimeDisplay(currentTimestampISO);
         alert("✅ Dynamic Report Matrix saved to Firebase Cloud successfully!");
     }).catch((error) => {
         console.error("Firebase save error:", error);
@@ -378,6 +420,7 @@ function loadFromFirebase() {
                 generatedReportRows = val.data;
                 updateTableFilterDropdowns();
                 renderTable();
+                updateLastModifiedTimeDisplay(val.lastUpdated);
                 console.log("Firebase sync successful. Loaded rows:", generatedReportRows.length);
             }
         } else {
@@ -833,6 +876,8 @@ function processMultipleSAPData(fileContentsArray) {
         generatedReportRows.push(row);
     });
 
+    const currentTimestampISO = new Date().toISOString();
+    updateLastModifiedTimeDisplay(currentTimestampISO);
     updateTableFilterDropdowns();
     renderTable();
 }
