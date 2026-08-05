@@ -1,252 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPIC - Unified Material Control Matrix</title>
-    <style>
-        :root {
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #cbd5e1;
-            --accent-blue: #2563eb;
-            --table-header-bg: #0f172a;
-            --table-header-color: #ffffff;
-            --group-even: #ffffff;
-            --group-odd: #f8fafc;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPIC - Unified Material Control Matrix (Refined)</title>
+<style>
+    :root {
+        --bg-main: #f1f5f9;
+        --bg-card: #ffffff;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #cbd5e1;
+        --accent-blue: #1e3a8a;
+        --accent-hover: #1e40af;
+        --table-header-bg: #1e3a8a;
+        --table-header-color: #ffffff;
+        --group-even: #ffffff;
+        --group-odd: #f8fafc;
+        --modal-overlay: rgba(15, 23, 42, 0.6);
+    }
 
-        [data-theme="dark"] {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --accent-blue: #38bdf8;
-            --table-header-bg: #020617;
-            --table-header-color: #f8fafc;
-            --group-even: #1e293b;
-            --group-odd: #0f172a;
-        }
+    [data-theme="dark"] {
+        --bg-main: #0f172a;
+        --bg-card: #1e293b;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border-color: #334155;
+        --accent-blue: #38bdf8;
+        --accent-hover: #7dd3fc;
+        --table-header-bg: #020617;
+        --table-header-color: #f8fafc;
+        --group-even: #1e293b;
+        --group-odd: #0f172a;
+        --modal-overlay: rgba(0, 0, 0, 0.8);
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            transition: background 0.3s, color 0.3s;
-        }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        margin: 0;
+        padding: 20px;
+        transition: background 0.3s, color 0.3s;
+    }
 
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-        }
+    .container {
+        max-width: 100%;
+        margin: 0 auto;
+    }
 
-        .header-panel {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            border: 1px solid var(--border-color);
-        }
+    #authOverlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: var(--modal-overlay);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+    .auth-card {
+        background: var(--bg-card);
+        padding: 35px;
+        border-radius: 12px;
+        width: 420px;
+        max-width: 90%;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        border: 1px solid var(--border-color);
+        text-align: center;
+    }
+    .auth-card h2 { margin-top: 0; color: var(--text-main); font-size: 24px; font-weight: 700; }
+    .auth-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; }
+    .form-group { margin-bottom: 18px; text-align: left; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+    .form-group input {
+        width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+        border-radius: 6px; background: var(--bg-main); color: var(--text-main); font-size: 14px;
+        box-sizing: border-box;
+    }
+    .auth-btn {
+        width: 100%; padding: 11px; background: var(--accent-blue); color: #ffffff; border: none;
+        border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s;
+        margin-top: 10px;
+    }
+    .auth-btn:hover { background: var(--accent-hover); }
+    .auth-toggle { margin-top: 15px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+    .auth-toggle span { color: var(--accent-blue); font-weight: 600; text-decoration: underline; }
 
-        .title-section h1 {
-            margin: 0;
-            font-size: 22px;
-            color: var(--text-main);
-        }
+    .header-panel {
+        background: var(--bg-card);
+        padding: 20px 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        border: 1px solid var(--border-color);
+    }
 
-        .title-section p {
-            margin: 5px 0 0 0;
-            font-size: 13px;
-            color: var(--text-muted);
-        }
+    .title-section h1 {
+        margin: 0;
+        font-size: 22px;
+        color: var(--text-main);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
 
-        .last-update-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--accent-blue);
-            background: rgba(37, 99, 235, 0.08);
-            padding: 3px 8px;
-            border-radius: 4px;
-            border: 1px solid rgba(37, 99, 235, 0.2);
-        }
+    .title-section p {
+        margin: 4px 0 0 0;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
 
-        .controls-section {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    .user-session-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #059669;
+        background: rgba(5, 150, 105, 0.08);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(5, 150, 105, 0.2);
+    }
 
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-            transition: opacity 0.2s;
-        }
+    .last-update-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        background: rgba(30, 58, 138, 0.08);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(30, 58, 138, 0.2);
+        margin-left: 8px;
+    }
 
-        .btn:hover { opacity: 0.9; }
-        .btn-primary { background: var(--accent-blue); color: #ffffff; }
-        .btn-success { background: #059669; color: #ffffff; }
-        .btn-warning { background: #d97706; color: #ffffff; }
-        .btn-secondary { background: #475569; color: #ffffff; }
-        .btn-info { background: #0284c7; color: #ffffff; }
+    .controls-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
-        .drop-zone {
-            border: 2px dashed var(--border-color);
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            background: var(--bg-card);
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        .drop-zone.dragover { background: rgba(37, 99, 235, 0.05); border-color: var(--accent-blue); }
+    .btn {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
 
-        .table-responsive {
-            background: var(--bg-card);
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            overflow-x: auto;
-            border: 1px solid var(--border-color);
-        }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary { background: #1e3a8a; color: #ffffff; }
+    .btn-success { background: #059669; color: #ffffff; }
+    .btn-warning { background: #d97706; color: #ffffff; }
+    .btn-secondary { background: #475569; color: #ffffff; }
+    .btn-info { background: #0284c7; color: #ffffff; }
+    .btn-danger { background: #dc2626; color: #ffffff; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 13px;
-        }
+    .drop-zone {
+        border: 2px dashed var(--border-color);
+        padding: 20px;
+        text-align: center;
+        border-radius: 10px;
+        background: var(--bg-card);
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone:hover { border-color: var(--accent-blue); }
+    .drop-zone.dragover { background: rgba(30, 58, 138, 0.05); border-color: var(--accent-blue); }
 
-        th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
-        }
+    .table-responsive {
+        background: var(--bg-card);
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+    }
 
-        th {
-            background-color: var(--table-header-bg);
-            color: var(--table-header-color);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 13px;
+    }
 
-        .group-even { background-color: var(--group-even); }
-        .group-odd { background-color: var(--group-odd); }
-        .group-start { border-top: 2px solid var(--border-color); }
+    th, td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
 
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 11px;
-            display: inline-block;
-        }
-        .status-sufficient { background: #d1fae5; color: #065f46; }
-        .status-low { background: #fef3c7; color: #92400e; }
-        .status-out { background: #fee2e2; color: #991b1b; }
-        .status-to-order { background: #e0e7ff; color: #3730a3; }
-        .status-need-planned { background: #fce7f3; color: #9d174d; }
-        .status-none { color: var(--text-muted); }
+    th {
+        background-color: var(--table-header-bg);
+        color: var(--table-header-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
 
-        .badge-qty { background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .badge-test { background: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .badge-need-planned { background: #fdf2f8; color: #be185d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .badge-batch-need { background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .badge-remark { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .mat-code { font-family: monospace; font-weight: 700; color: var(--accent-blue); }
-        .no-data-msg { text-align: center; padding: 40px; color: var(--text-muted); }
+    .group-even { background-color: var(--group-even); }
+    .group-odd { background-color: var(--group-odd); }
+    .group-start { border-top: 2px solid var(--border-color); }
 
-        .filter-row input, .filter-row select {
-            width: 100%;
-            padding: 4px 6px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--bg-card);
-            color: var(--text-main);
-            font-size: 12px;
-            box-sizing: border-box;
-        }
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 11px;
+        display: inline-block;
+    }
+    .status-sufficient { background: #d1fae5; color: #065f46; }
+    .status-low { background: #fef3c7; color: #92400e; }
+    .status-out { background: #fee2e2; color: #991b1b; }
+    .status-to-order { background: #e0e7ff; color: #3730a3; }
+    .status-need-planned { background: #fce7f3; color: #9d174d; }
+    .status-none { color: var(--text-muted); }
 
-        /* Modal for Templates */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: 8px;
-            width: 450px;
-            max-width: 90%;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
-        .close-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); }
-        .template-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-    </style>
+    .badge-qty { background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-test { background: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-need-planned { background: #fdf2f8; color: #be185d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-batch-need { background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge-remark { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .mat-code { font-family: monospace; font-weight: 700; color: var(--accent-blue); }
+    .no-data-msg { text-align: center; padding: 40px; color: var(--text-muted); }
+
+    .filter-row input, .filter-row select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-size: 12px;
+        box-sizing: border-box;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background-color: var(--modal-overlay);
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background: var(--bg-card);
+        padding: 25px;
+        border-radius: 10px;
+        width: 480px;
+        max-width: 90%;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
+    .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+    .template-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+</style>
 </head>
 <body>
 
+<div id="authOverlay">
+    <div class="auth-card" id="authCardBox">
+        <h2 id="authCardTitle">PPIC Office Portal</h2>
+        <p id="authCardSub">Secure Authentication & Multi-User Login</p>
+        
+        <div class="form-group">
+            <label>Corporate Email ID</label>
+            <input type="email" id="authEmail" placeholder="employee@company.com">
+        </div>
+        <div class="form-group">
+            <label>Secure Password</label>
+            <input type="password" id="authPassword" placeholder="••••••••">
+        </div>
+        
+        <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthAction()">Sign In to Dashboard</button>
+        
+        <div class="auth-toggle" id="authToggleMode" onclick="toggleAuthMode()">
+            Don't have an account? <span>Register New ID</span>
+        </div>
+    </div>
+</div>
+
 <div class="container">
-    <!-- HEADER PANEL -->
     <div class="header-panel">
         <div class="title-section">
             <h1>PPIC - Unified Material Control Matrix</h1>
             <p>Dynamic Reorder Analytics & Production Planning Automation</p>
-            <div id="lastUpdateIndicator" class="last-update-badge">
-                🕒 Last Updated: <span id="lastUpdateTimeText">Not Loaded Yet</span>
+            <div>
+                <span id="userSessionBadge" class="user-session-badge">👤 <span id="loggedInUserText">Guest</span></span>
+                <span id="lastUpdateIndicator" class="last-update-badge">
+                    🕒 Last Updated: <span id="lastUpdateTimeText">Not Loaded Yet</span>
+                </span>
             </div>
         </div>
         <div class="controls-section">
-            <button class="btn btn-info" onclick="openTemplateModal()">📥 Download Templates</button>
-            <input type="date" id="firebaseDatePicker" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
-            <button class="btn btn-primary" onclick="fetchReportByDate()">📅 Fetch by Date</button>
-            <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save to Cloud</button>
-            <button class="btn btn-warning" onclick="reloadUploadedFiles()">🔄 Refresh Data</button>
-            <button class="btn btn-primary" onclick="exportProcessedData()">📊 Export Excel</button>
-            <select id="themeSelect" onchange="changeTheme(this.value)" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+            <button class="btn btn-info" onclick="openTemplateModal()">📥 Templates</button>
+            <input type="date" id="firebaseDatePicker" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+            <button class="btn btn-primary" onclick="fetchReportByDate()">📅 Fetch Date</button>
+            <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save Cloud</button>
+            <button class="btn btn-warning" onclick="reloadUploadedFiles()">🔄 Refresh</button>
+            <button class="btn btn-primary" onclick="exportProcessedData()">📊 Export</button>
+            <button class="btn btn-danger" onclick="logoutUser()" style="padding: 8px 10px;" title="Logout">🚪</button>
+            <select id="themeSelect" onchange="changeTheme(this.value)" style="padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
                 <option value="default">Light Theme</option>
                 <option value="dark">Dark Theme</option>
             </select>
         </div>
     </div>
 
-    <!-- DROP ZONE -->
     <div class="drop-zone" id="dropZone">
         <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileUpload()">
         <div id="uploadLabel">
@@ -254,7 +339,6 @@
         </div>
     </div>
 
-    <!-- DATA TABLE CONTAINER -->
     <div class="table-responsive">
         <table>
             <thead>
@@ -300,7 +384,7 @@
                             <option value="ALL">All Status</option>
                         </select>
                     </td>
-                    <td><button class="btn btn-secondary" style="font-size:10px; padding:3px 6px; width:100%;" onclick="resetAllFilters()">Reset</button></td>
+                    <td><button class="btn btn-secondary" style="font-size:10px; padding:4px 8px; width:100%;" onclick="resetAllFilters()">Reset</button></td>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -314,7 +398,6 @@
     </div>
 </div>
 
-<!-- TEMPLATE DOWNLOAD MODAL -->
 <div id="templateModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -331,49 +414,131 @@
     </div>
 </div>
 
-<!-- FIREBASE SDK INCLUSION -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAcF5pIIc_daPi2gEgNW1YFMkVBviyFdHI",
         authDomain: "ppic-dashboard-f5f95.firebaseapp.com",
         databaseURL: "https://ppic-dashboard-f5f95-default-rtdb.firebaseio.com",
         projectId: "ppic-dashboard-f5f95",
-        storageBucket: "ppic-dashboard-f5f95.firebasestorage.app",
+        storageBucket: "ppic-dashboard-f5f95.appspot.com",
         messagingSenderId: "856882762391",
         appId: "1:856882762391:web:f13cda673aca7439fb8fd2"
     };
 
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
+    const auth = getAuth(app);
 
     window.firebaseDb = database;
+    window.firebaseAuth = auth;
     window.dbRef = ref;
     window.dbSet = set;
     window.dbGet = get;
     window.dbChild = child;
     window.dbOnValue = onValue;
+    window.createUserAuth = createUserWithEmailAndPassword;
+    window.signInAuth = signInWithEmailAndPassword;
+    window.signOutAuth = signOut;
 
-    window.addEventListener('DOMContentLoaded', () => {
-        loadFromFirebase();
+    onAuthStateChanged(auth, async (user) => {
+        const overlay = document.getElementById('authOverlay');
+        if (user) {
+            const emailKey = user.email.replace(/[.#$\/\[\]]/g, "_");
+            const userRef = ref(database, `ppic_users/${emailKey}`);
+            
+            try {
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    if (userData.status === "approved" || user.email === "admin@ppic.com") {
+                        overlay.style.display = 'none';
+                        document.getElementById('loggedInUserText').innerText = user.email;
+                        loadFromFirebase();
+                    } else {
+                        overlay.style.display = 'flex';
+                        document.getElementById('authCardBox').innerHTML = `
+                            <h2>⏳ Pending Authorization</h2>
+                            <p>Your ID (${user.email}) is awaiting Admin approval. Please contact the administrator to authorize your login access.</p>
+                            <button class="auth-btn" onclick="logoutUser()">Sign Out / Back</button>
+                        `;
+                    }
+                } else {
+                    await set(userRef, { email: user.email, status: "pending", createdAt: new Date().toISOString() });
+                    overlay.style.display = 'flex';
+                    document.getElementById('authCardBox').innerHTML = `
+                        <h2>⏳ Verification Required</h2>
+                        <p>Registration successful for <strong>${user.email}</strong>! First-time login requires administrator authorization before dashboard access is granted.</p>
+                        <button class="auth-btn" onclick="logoutUser()">Back to Login</button>
+                    `;
+                }
+            } catch (err) {
+                console.error("Auth check error:", err);
+            }
+        } else {
+            overlay.style.display = 'flex';
+        }
     });
 </script>
 
 <script>
 let generatedReportRows = [];
 let cachedFileContents = [];
+let isRegisterMode = false;
 
-// TEMPLATE MODAL CONTROLS
-function openTemplateModal() {
-    document.getElementById('templateModal').style.display = 'flex';
-}
-function closeTemplateModal() {
-    document.getElementById('templateModal').style.display = 'none';
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const title = document.getElementById('authCardTitle');
+    const sub = document.getElementById('authCardSub');
+    const btn = document.getElementById('authSubmitBtn');
+    const toggle = document.getElementById('authToggleMode');
+
+    if (isRegisterMode) {
+        title.innerText = "Register New Account";
+        sub.innerText = "Create credentials for office access verification";
+        btn.innerText = "Register & Request Access";
+        toggle.innerHTML = `Already have an account? <span>Sign In</span>`;
+    } else {
+        title.innerText = "PPIC Office Portal";
+        sub.innerText = "Secure Authentication & Multi-User Login";
+        btn.innerText = "Sign In to Dashboard";
+        toggle.innerHTML = `Don't have an account? <span>Register New ID</span>`;
+    }
 }
 
-// DOWNLOAD TEMPLATES FUNCTION
+async function handleAuthAction() {
+    const email = document.getElementById('authEmail').value.trim();
+    const pass = document.getElementById('authPassword').value.trim();
+
+    if (!email || !pass) {
+        alert("⚠️ Please enter both Email and Password!");
+        return;
+    }
+
+    try {
+        if (isRegisterMode) {
+            await window.createUserAuth(window.firebaseAuth, email, pass);
+            alert("✅ Registration complete! Your account is pending admin verification.");
+        } else {
+            await window.signInAuth(window.firebaseAuth, email, pass);
+        }
+    } catch (error) {
+        alert("❌ Authentication Error: " + error.message);
+    }
+}
+
+function logoutUser() {
+    window.signOutAuth(window.firebaseAuth).then(() => {
+        location.reload();
+    });
+}
+
+function openTemplateModal() { document.getElementById('templateModal').style.display = 'flex'; }
+function closeTemplateModal() { document.getElementById('templateModal').style.display = 'none'; }
+
 function downloadTemplate(type) {
     let headers = [];
     let sampleData = [];
@@ -411,18 +576,13 @@ function downloadTemplate(type) {
 function updateLastModifiedTimeDisplay(isoString) {
     const textSpan = document.getElementById('lastUpdateTimeText');
     if (!textSpan) return;
-
     if (!isoString) {
         textSpan.innerText = "Just Now (" + new Date().toLocaleString() + ")";
         return;
     }
-
     const dateObj = new Date(isoString);
     if (!isNaN(dateObj.getTime())) {
-        textSpan.innerText = dateObj.toLocaleString('en-US', { 
-            month: 'short', day: 'numeric', year: 'numeric', 
-            hour: '2-digit', minute: '2-digit', second: '2-digit' 
-        });
+        textSpan.innerText = dateObj.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
     } else {
         textSpan.innerText = isoString;
     }
@@ -430,18 +590,10 @@ function updateLastModifiedTimeDisplay(isoString) {
 
 function fetchReportByDate() {
     const selectedDate = document.getElementById('firebaseDatePicker').value;
-    if (!selectedDate) {
-        alert("⚠️ Please select a date first!");
-        return;
-    }
-
-    if (!window.firebaseDb) {
-        alert("❌ Firebase is not initialized.");
-        return;
-    }
+    if (!selectedDate) { alert("⚠️ Please select a date first!"); return; }
+    if (!window.firebaseDb) { alert("❌ Firebase is not initialized."); return; }
 
     const datePath = `ppic_reports/history/${selectedDate}`;
-    
     window.dbGet(window.dbChild(window.dbRef(window.firebaseDb), datePath)).then((snapshot) => {
         if (snapshot.exists()) {
             const val = snapshot.val();
@@ -451,36 +603,21 @@ function fetchReportByDate() {
                 renderTable();
                 updateLastModifiedTimeDisplay(val.lastUpdated);
                 alert(`✅ Successfully loaded report for date: ${selectedDate}`);
-            } else {
-                alert(`⚠️ Data format invalid for date: ${selectedDate}`);
-            }
+            } else { alert(`⚠️ Data format invalid for date: ${selectedDate}`); }
         } else {
             alert(`❌ No report found in Firebase for date: ${selectedDate}. Falling back to 'latest'.`);
             loadFromFirebase();
         }
-    }).catch((error) => {
-        console.error("Error fetching data by date:", error);
-        alert("❌ Error fetching data: " + error.message);
-    });
+    }).catch((error) => { alert("❌ Error fetching data: " + error.message); });
 }
 
 function saveToFirebaseWithDate() {
-    if (!window.firebaseDb) {
-        alert("Firebase is initializing or configuration is missing.");
-        return;
-    }
-
-    if (generatedReportRows.length === 0) {
-        alert("Upload Data! No data to save.");
-        return;
-    }
+    if (!window.firebaseDb) { alert("Firebase initialization missing."); return; }
+    if (generatedReportRows.length === 0) { alert("Upload Data! No data to save."); return; }
 
     const currentTimestampISO = new Date().toISOString();
     const todayDateStr = new Date().toISOString().slice(0, 10);
-    const payload = {
-        lastUpdated: currentTimestampISO,
-        data: generatedReportRows
-    };
+    const payload = { lastUpdated: currentTimestampISO, data: generatedReportRows };
 
     const latestRef = window.dbRef(window.firebaseDb, 'ppic_reports/latest');
     const historyRef = window.dbRef(window.firebaseDb, `ppic_reports/history/${todayDateStr}`);
@@ -491,15 +628,11 @@ function saveToFirebaseWithDate() {
     ]).then(() => {
         updateLastModifiedTimeDisplay(currentTimestampISO);
         alert("✅ Dynamic Report Matrix saved to Firebase Cloud successfully!");
-    }).catch((error) => {
-        console.error("Firebase save error:", error);
-        alert("❌ Firebase Error: " + error.message);
-    });
+    }).catch((error) => { alert("❌ Firebase Error: " + error.message); });
 }
 
 function loadFromFirebase() {
     if (!window.firebaseDb) return;
-
     const dbRef = window.dbRef(window.firebaseDb);
     window.dbGet(window.dbChild(dbRef, 'ppic_reports/latest')).then((snapshot) => {
         if (snapshot.exists()) {
@@ -511,9 +644,7 @@ function loadFromFirebase() {
                 updateLastModifiedTimeDisplay(val.lastUpdated);
             }
         }
-    }).catch((error) => {
-        console.error("Error pulling data from Firebase:", error);
-    });
+    }).catch((error) => { console.error("Error pulling data from Firebase:", error); });
 }
 
 function changeTheme(themeName) {
@@ -530,7 +661,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
-
 dropZone.addEventListener('click', () => fileInput.click());
 
 ['dragenter', 'dragover'].forEach(name => {
@@ -541,10 +671,7 @@ dropZone.addEventListener('click', () => fileInput.click());
 });
 dropZone.addEventListener('drop', (e) => {
     const dt = e.dataTransfer;
-    if (dt.files.length > 0) {
-        fileInput.files = dt.files;
-        handleFileUpload();
-    }
+    if (dt.files.length > 0) { fileInput.files = dt.files; handleFileUpload(); }
 }, false);
 
 function handleFileUpload() {
@@ -563,17 +690,14 @@ function handleFileUpload() {
         cachedFileContents = results;
         document.getElementById('uploadLabel').innerHTML = `
             <span style="color:#059669; font-weight:700;">✅ ${files.length} File(s) Successfully Loaded</span>
-            <span class="sub-text">Click 'Refresh Data' anytime to re-process files in memory</span>
+            <span class="sub-text">Click 'Refresh' anytime to re-process files in memory</span>
         `;
         processMultipleSAPData(cachedFileContents);
     });
 }
 
 function reloadUploadedFiles() {
-    if (cachedFileContents.length === 0) {
-        alert("Upload Files! No uploaded data found in memory.");
-        return;
-    }
+    if (cachedFileContents.length === 0) { alert("Upload Files! No uploaded data found in memory."); return; }
     processMultipleSAPData(cachedFileContents);
 }
 
@@ -586,41 +710,25 @@ function parseSmartNumber(valStr) {
     if (!valStr) return 0;
     let clean = cleanValue(valStr);
     if (!clean) return 0;
-
     if (clean.includes(',') && clean.includes('.')) {
-        if (clean.indexOf('.') < clean.indexOf(',')) {
-            clean = clean.replace(/\./g, '').replace(',', '.');
-        } else {
-            clean = clean.replace(/,/g, '');
-        }
+        if (clean.indexOf('.') < clean.indexOf(',')) { clean = clean.replace(/\./g, '').replace(',', '.'); }
+        else { clean = clean.replace(/,/g, ''); }
     } else if (clean.includes(',')) {
-        if (/^\d{1,3}(,\d{3})+$/.test(clean)) {
-            clean = clean.replace(/,/g, '');
-        } else {
-            clean = clean.replace(',', '.');
-        }
+        if (/^\d{1,3}(,\d{3})+$/.test(clean)) { clean = clean.replace(/,/g, ''); }
+        else { clean = clean.replace(',', '.'); }
     }
-
     let parsed = parseFloat(clean);
     return isNaN(parsed) ? 0 : parsed;
 }
 
 function parseCSVOrTabLine(line, isTab) {
     if (isTab) return line.split('\t');
-    let result = [];
-    let current = '';
-    let inQuotes = false;
-    
+    let result = []; let current = ''; let inQuotes = false;
     for (let i = 0; i < line.length; i++) {
         let char = line[i];
-        if (char === '"' || char === "'") {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            result.push(current);
-            current = '';
-        } else {
-            current += char;
-        }
+        if (char === '"' || char === "'") { inQuotes = !inQuotes; }
+        else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
+        else { current += char; }
     }
     result.push(current);
     return result;
@@ -635,9 +743,7 @@ function parseDateVal(dateStr) {
     }
     let parts = cleanStr.split(/[\.\-\/]/);
     if (parts.length === 3) {
-        let day = parseInt(parts[0], 10);
-        let month = parseInt(parts[1], 10) - 1;
-        let year = parseInt(parts[2], 10);
+        let day = parseInt(parts[0], 10); let month = parseInt(parts[1], 10) - 1; let year = parseInt(parts[2], 10);
         if (isNaN(day) || isNaN(month) || isNaN(year)) return 0;
         if (year < 100) year += 2000;
         return new Date(year, month, day).getTime() || 0;
@@ -656,51 +762,31 @@ function calculateMetrics(code, rawRemark, avgSale, plantStock, whStock, process
     if (recommended < 0) recommended = 0;
 
     const cleanRemark = String(rawRemark || '').trim();
-    const hasProductRemark = (cleanRemark !== '' && cleanRemark !== '0' && cleanRemark !== '-' && cleanRemark.toLowerCase() !== 'null' && cleanRemark.toLowerCase() !== 'undefined');
+    const hasProductRemark = (cleanRemark !== '' && cleanRemark !== '0' && cleanRemark !== '-' && cleanRemark.toLowerCase() !== 'null');
 
     let stockStatus = "Sufficient";
     let statusClass = "status-sufficient";
     let needPlannedQty = 0;
 
     const isOldReplacedCode = hasProductRemark && cleanRemark.toLowerCase().includes("replaced by new code");
-    const isMergedCode = hasProductRemark && cleanRemark.toLowerCase().includes("stock");
 
     if (isOldReplacedCode) {
-        recommended = 0;
-        stockStatus = "-";
-        statusClass = "status-none";
-        needPlannedQty = 0;
-    } 
-    else if (!hasProductRemark || isMergedCode || !isOldReplacedCode) {
+        recommended = 0; stockStatus = "-"; statusClass = "status-none"; needPlannedQty = 0;
+    } else {
         if (isStartsWith24) {
-            if (recommended > 0) {
-                stockStatus = "TO BE ORDERED";
-                statusClass = "status-to-order";
-            } else {
-                stockStatus = "Sufficient";
-                statusClass = "status-sufficient";
-            }
+            stockStatus = recommended > 0 ? "TO BE ORDERED" : "Sufficient";
+            statusClass = recommended > 0 ? "status-to-order" : "status-sufficient";
             needPlannedQty = 0;
         } else {
             if (recommended > sapPlanned) {
-                stockStatus = "Need Planned Order";
-                statusClass = "status-need-planned";
+                stockStatus = "Need Planned Order"; statusClass = "status-need-planned";
                 needPlannedQty = recommended - sapPlanned;
-            } 
-            else if (totalEffectiveStock <= 0) {
-                stockStatus = "Out of Stock";
-                statusClass = "status-out";
-                needPlannedQty = 0;
-            } 
-            else if (totalEffectiveStock < avgSale) {  
-                stockStatus = "Low Stock";
-                statusClass = "status-low";
-                needPlannedQty = 0;
-            } 
-            else {
-                stockStatus = "Sufficient";
-                statusClass = "status-sufficient";
-                needPlannedQty = 0;
+            } else if (totalEffectiveStock <= 0) {
+                stockStatus = "Out of Stock"; statusClass = "status-out"; needPlannedQty = 0;
+            } else if (totalEffectiveStock < avgSale) {
+                stockStatus = "Low Stock"; statusClass = "status-low"; needPlannedQty = 0;
+            } else {
+                stockStatus = "Sufficient"; statusClass = "status-sufficient"; needPlannedQty = 0;
             }
         }
     }
@@ -712,16 +798,13 @@ function calculateMetrics(code, rawRemark, avgSale, plantStock, whStock, process
     if (needPlannedQty > 0 && batchSize > 0) {
         planBatchNeed = parseFloat((needPlannedQty / batchSize).toFixed(2));
     }
-
     let finalRemark = hasProductRemark ? cleanRemark : '-';
-
     return { recommended, needPlannedQty, planBatchNeed, stockStatus, statusClass, finalRemark };
 }
 
 function updateTableFilterDropdowns() {
     const filterPlant = document.getElementById('filterPlant');
     const filterStatus = document.getElementById('filterStatus');
-
     const selectedPlant = filterPlant.value;
     const selectedStatus = filterStatus.value;
 
@@ -729,7 +812,6 @@ function updateTableFilterDropdowns() {
     filterStatus.innerHTML = '<option value="ALL">All Status</option>';
 
     let plants = new Set(), statuses = new Set();
-
     generatedReportRows.forEach(r => {
         if (r.plantName && r.plantName !== '-') plants.add(r.plantName);
         if (r.stockStatus && r.stockStatus !== '-') statuses.add(r.stockStatus);
@@ -784,7 +866,6 @@ function processMultipleSAPData(fileContentsArray) {
     fileContentsArray.forEach(rawData => {
         const lines = rawData.trim().split('\n');
         if (lines.length === 0) return;
-
         const isTab = lines[0].includes('\t');
         let firstLine = parseCSVOrTabLine(lines[0], isTab);
 
@@ -797,7 +878,7 @@ function processMultipleSAPData(fileContentsArray) {
             if (hText.includes("material code") || hText === "material" || hText === "code") codeIdx = index;
             else if (hText.includes("description") || hText.includes("material desc")) descIdx = index;
             else if (hText === "plant" || hText.includes("plant name")) plantNameIdx = index;
-            else if (hText.includes("batch size") || hText.includes("std batch") || hText.includes("batch qty")) batchSizeIdx = index;
+            else if (hText.includes("batch size") || hText.includes("std batch")) batchSizeIdx = index;
             else if (hText.includes("avg sale") || hText.includes("average sale")) avgSaleIdx = index;
             else if (hText.includes("planned order date")) dateIdx = index;
             else if (hText.includes("planned order qty")) qtyIdx = index;
@@ -809,7 +890,7 @@ function processMultipleSAPData(fileContentsArray) {
             else if (hText.includes("process order") || hText === "process") procIdx = index;
             else if (hText.includes("under test") || hText === "test") testIdx = index;
             else if (hText.includes("sap planned") || hText.includes("planned")) sapPlannedIdx = index;
-            else if (hText.includes("remark") || hText.includes("product remark") || hText.includes("comments") || hText.includes("notes")) remarkIdx = index;
+            else if (hText.includes("remark") || hText.includes("product remark")) remarkIdx = index;
         });
 
         if (codeIdx === -1) return;
@@ -843,8 +924,7 @@ function processMultipleSAPData(fileContentsArray) {
             if (!stockMergeMap[code]) {
                 stockMergeMap[code] = {
                     desc: desc || code, plantStock: 0, whStock: 0, processOrder: 0, underTest: 0, sapPlanned: 0,
-                    mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: '-', batchSize: 0, remark: '',
-                    merged: false
+                    mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: '-', batchSize: 0, remark: '', merged: false
                 };
             }
             
@@ -879,13 +959,10 @@ function processMultipleSAPData(fileContentsArray) {
         }
     });
 
-    Object.keys(stockMergeMap).forEach(c => {
-        stockMergeMap[c].avgSale = pureAvgSaleStore[c] || 0;
-    });
+    Object.keys(stockMergeMap).forEach(c => { stockMergeMap[c].avgSale = pureAvgSaleStore[c] || 0; });
 
     Object.keys(codeMappingRules).forEach(oldCode => {
         const newCode = codeMappingRules[oldCode];
-
         if (stockMergeMap[oldCode] && !stockMergeMap[oldCode].merged) {
             if (!stockMergeMap[newCode]) {
                 stockMergeMap[newCode] = {
@@ -894,11 +971,9 @@ function processMultipleSAPData(fileContentsArray) {
                 };
                 uniqueMaterialsSet.add(newCode);
             }
-
             if (!stockMergeMap[newCode].batchSize && stockMergeMap[oldCode].batchSize) {
                 stockMergeMap[newCode].batchSize = stockMergeMap[oldCode].batchSize;
             }
-
             stockMergeMap[newCode].plantStock += stockMergeMap[oldCode].plantStock;
             stockMergeMap[newCode].whStock += stockMergeMap[oldCode].whStock;
             stockMergeMap[newCode].processOrder += stockMergeMap[oldCode].processOrder;
@@ -909,9 +984,7 @@ function processMultipleSAPData(fileContentsArray) {
             stockMergeMap[newCode].avgSale = oldSaleVal + newSaleVal;
 
             let mergeNote = `Stock & Sale merged from old code: ${oldCode}`;
-            stockMergeMap[newCode].remark = stockMergeMap[newCode].remark 
-                ? `${stockMergeMap[newCode].remark} | ${mergeNote}` 
-                : mergeNote;
+            stockMergeMap[newCode].remark = stockMergeMap[newCode].remark ? `${stockMergeMap[newCode].remark} | ${mergeNote}` : mergeNote;
 
             stockMergeMap[oldCode].plantStock = 0;
             stockMergeMap[oldCode].whStock = 0;
@@ -926,9 +999,7 @@ function processMultipleSAPData(fileContentsArray) {
 
     uniqueMaterialsSet.forEach(code => {
         const hasPlannedRow = rawParsedRows.some(r => r.code === code);
-        if (!hasPlannedRow) {
-            rawParsedRows.push({ code, desc: stockMergeMap[code].desc, date: 'N/A', qty: 0 });
-        }
+        if (!hasPlannedRow) { rawParsedRows.push({ code, desc: stockMergeMap[code].desc, date: 'N/A', qty: 0 }); }
     });
 
     rawParsedRows.sort((a, b) => a.code.localeCompare(b.code));
