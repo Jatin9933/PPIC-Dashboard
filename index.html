@@ -454,7 +454,7 @@
                 const snapshot = await get(userRef);
                 if (snapshot.exists()) {
                     const userData = snapshot.val();
-                    if (userData.status === "approved" || user.email === "admin@ppic.com") {
+                    if (userData.status === "approved" || user.email === "ppic@pilindia.in") {
                         overlay.style.display = 'none';
                         document.getElementById('loggedInUserText').innerText = user.email;
                         loadFromFirebase();
