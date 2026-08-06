@@ -9,120 +9,350 @@
             --primary-dark: #0F172A;
             --primary-blue: #1E3A8A;
             --accent-blue: #2563EB;
+            --accent-cyan: #38BDF8;
             --bg-main: #F8FAFC;
             --border-color: #CBD5E1;
             --text-muted: #64748B;
         }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s ease-in-out;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-main);
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #1E293B 100%);
+            background-attachment: fixed;
             margin: 0;
-            padding: 20px;
+            padding: 25px;
             color: #1E293B;
+            min-height: 100vh;
+            animation: fadeInBody 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        h1, h2 {
-            color: var(--primary-dark);
-            text-align: center;
+
+        @keyframes fadeInBody {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
         .container {
-            max-width: 1400px;
+            max-width: 1420px;
             margin: 0 auto;
-            background: #FFFFFF;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            animation: slideUpContainer 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: bottom;
         }
+
+        @keyframes slideUpContainer {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Animated Header Section */
+        .header-box {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(37,99,235,0.05) 0%, rgba(56,189,248,0.1) 50%, rgba(37,99,235,0.05) 100%);
+            background-size: 200% auto;
+            animation: shimmerBackground 6s linear infinite;
+        }
+
+        @keyframes shimmerBackground {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .company-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0F172A 0%, #2563EB 50%, #1E3A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 5px 0;
+            animation: pulseGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { filter: drop-shadow(0 0 2px rgba(37,99,235,0.2)); }
+            to { filter: drop-shadow(0 0 8px rgba(37,99,235,0.5)); }
+        }
+
+        .matrix-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        /* Interactive Filter Controls */
         .filters-container {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             align-items: center;
-        }
-        .filters-container input, .filters-container select {
-            padding: 8px 12px;
+            background: #F1F5F9;
+            padding: 14px;
+            border-radius: 10px;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 14px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
+
+        .filters-container input, .filters-container select {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13.5px;
+            background: #FFFFFF;
+            color: #0F172A;
+            outline: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .filters-container input:focus, .filters-container select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            transform: translateY(-1px);
+        }
+
         .btn {
-            background-color: var(--accent-blue);
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
             color: white;
             border: none;
-            padding: 9px 16px;
-            border-radius: 4px;
+            padding: 10px 18px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+            position: relative;
+            overflow: hidden;
         }
+
         .btn:hover {
-            background-color: #1D4ED8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.4);
         }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
+        }
+        .btn-success:hover {
+            box-shadow: 0 6px 12px -2px rgba(5, 150, 105, 0.4);
+        }
+
+        /* Ultra-Smooth Sticky Table Container with Custom Scrollbar */
         .table-responsive {
             overflow-x: auto;
-            max-height: 650px;
+            overflow-y: auto;
+            max-height: 620px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            background: #FFFFFF;
+            scroll-behavior: smooth;
         }
+
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             text-align: left;
             font-size: 13px;
         }
+
         th, td {
-            border: 1px solid var(--border-color);
-            padding: 8px 10px;
+            border-bottom: 1px solid #E2E8F0;
+            border-right: 1px solid #E2E8F0;
+            padding: 10px 12px;
             vertical-align: middle;
+            white-space: nowrap;
         }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        /* Advanced Frozen Sticky Header */
         th {
-            background-color: var(--primary-dark);
+            background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
             color: #FFFFFF;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 20;
             text-transform: uppercase;
             font-size: 11.5px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px -2px rgba(15, 23, 42, 0.2);
         }
+
+        /* Animated Row Entrance */
+        .data-row {
+            animation: fadeInRow 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .group-even { background-color: #FFFFFF; }
         .group-odd { background-color: #F8FAFC; }
+        
+        .data-row:hover {
+            background-color: #EFF6FF !important;
+            transform: scale(1.001);
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
         .mat-code { font-family: monospace; font-weight: bold; color: var(--primary-blue); }
+        
         .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-weight: bold;
             font-size: 11px;
             text-align: center;
             display: inline-block;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .status-sufficient { background-color: #D1FAE5; color: #065F46; }
         .status-low { background-color: #FEF3C7; color: #92400E; }
         .status-out { background-color: #FEE2E2; color: #991B1B; }
         .status-to-order { background-color: #E0E7FF; color: #3730A3; }
         .status-need-planned { background-color: #FCE7F3; color: #9D174D; }
-        .badge-qty { background-color: #DCFCE7; color: #15803D; font-weight: bold; }
-        .badge-test { background-color: #FFEDD5; color: #C2410C; font-weight: bold; }
-        .badge-remark { background-color: #FEF3C7; color: #92400E; font-weight: 600; }
-        .no-data-msg { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+        
+        .badge-qty { background-color: #DCFCE7; color: #15803D; font-weight: bold; padding: 2px 6px; border-radius: 4px;}
+        .badge-test { background-color: #FFEDD5; color: #C2410C; font-weight: bold; padding: 2px 6px; border-radius: 4px;}
+        .badge-remark { background-color: #FEF3C7; color: #92400E; font-weight: 600; padding: 2px 6px; border-radius: 4px;}
+        
+        .no-data-msg { text-align: center; padding: 50px; color: var(--text-muted); font-style: italic; font-size: 14px; }
+
+        #lastModifiedDisplay {
+            font-size: 12px; 
+            color: var(--text-muted); 
+            margin-bottom: 12px; 
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        #lastModifiedDisplay::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            animation: pulseDot 2s infinite;
+        }
+
+        /* Session Timeout Overlay Modal */
+        #logoutOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            animation: fadeInOverlay 0.3s ease forwards;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .logout-card {
+            background: #FFFFFF;
+            padding: 35px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: scaleUpCard 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes scaleUpCard {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .logout-card h2 {
+            margin-top: 0;
+            color: #0F172A;
+            font-size: 22px;
+        }
+
+        .logout-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>PSYCHOTROPICS INDIA LIMITED</h2>
-    <h1>PPIC - Unified Material Control Matrix</h1>
+    <div class="header-box">
+        <h1 class="company-title">PSYCHOTROPICS INDIA LIMITED</h1>
+        <p class="matrix-title">PPIC - Unified Material Control Matrix & Dynamic Reorder Analytics</p>
+    </div>
     
     <div class="filters-container">
-        <input type="text" id="filterCode" placeholder="Filter Material Code..." onkeyup="renderTable()">
-        <input type="text" id="filterDesc" placeholder="Filter Description..." onkeyup="renderTable()">
+        <input type="text" id="filterCode" placeholder="🔍 Filter Material Code..." onkeyup="renderTable()">
+        <input type="text" id="filterDesc" placeholder="📝 Filter Description..." onkeyup="renderTable()">
         <select id="filterPlant" onchange="renderTable()">
             <option value="ALL">All Plants</option>
         </select>
         <select id="filterStatus" onchange="renderTable()">
             <option value="ALL">All Status</option>
         </select>
-        <button class="btn" onclick="resetAllFilters()">Reset Filters</button>
-        <button class="btn" style="background-color: #059669;" onclick="exportProcessedData()">Export to Excel</button>
+        <button class="btn" onclick="resetAllFilters()">🔄 Reset Filters</button>
+        <button class="btn btn-success" onclick="exportProcessedData()">📊 Export to Excel</button>
     </div>
 
-    <div id="lastModifiedDisplay" style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;"></div>
+    <div id="lastModifiedDisplay"></div>
 
     <div class="table-responsive">
         <table>
@@ -132,7 +362,7 @@
                     <th>Material Description</th>
                     <th>Plant</th>
                     <th>Batch Size</th>
-                    <th>Avg Sale</th>
+                    <th>Actual Req.</th>
                     <th>Planned Order Date</th>
                     <th>Planned Order Qty</th>
                     <th>Last Mfg Batch</th>
@@ -157,10 +387,44 @@
     </div>
 </div>
 
+<!-- Logout Overlay Modal -->
+<div id="logoutOverlay">
+    <div class="logout-card">
+        <h2>🔒 Session Expired</h2>
+        <p>Inactivity ke karan aapka session 30 minutes baad secure logout ho gaya hai. Dobara access karne ke liye refresh karein.</p>
+        <button class="btn" onclick="location.reload()" style="width: 100%;">🔄 Login Again / Refresh</button>
+    </div>
+</div>
+
 <script>
+    // 30 Minutes Inactivity Auto-Logout Mechanism
+    let inactivityTimer;
+    const TIMEOUT_DURATION = 30 * 60 * 1000; // 30 Minutes in milliseconds
+
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+            triggerAutoLogout();
+        }, TIMEOUT_DURATION);
+    }
+
+    function triggerAutoLogout() {
+        document.getElementById('logoutOverlay').style.display = 'flex';
+        // Clear sensitive dashboard datasets from memory
+        generatedReportRows = [];
+        document.getElementById('tableBody').innerHTML = `<tr><td colspan="20" class="no-data-msg">🔒 Session timeout. Data cleared securely.</td></tr>`;
+    }
+
+    // Listen to user activities to reset the 30-minute countdown
+    window.onload = resetInactivityTimer;
+    window.onmousemove = resetInactivityTimer;
+    window.onkeypress = resetInactivityTimer;
+    window.onclick = resetInactivityTimer;
+    window.onscroll = resetInactivityTimer;
+    window.ontouchstart = resetInactivityTimer;
+
     let generatedReportRows = [];
 
-    // Dummy/Helper Parser Placeholders (Aapke project ke anusaar inko aapke existing helper functions se map kiya gaya hai)
     function parseCSVOrTabLine(line, isTab) {
         return isTab ? line.split('\t') : line.split(',');
     }
@@ -181,10 +445,9 @@
         return isNaN(ts) ? 0 : ts;
     }
 
-    function calculateMetrics(code, remark, avgSale, plantStock, whStock, processOrder, sapPlanned, underTest, batchSize) {
-        // Sample metrics calculation skeleton
+    function calculateMetrics(code, remark, actualReq, plantStock, whStock, processOrder, sapPlanned, underTest, batchSize) {
         let totalStock = plantStock + whStock + processOrder + sapPlanned + underTest;
-        let recommended = avgSale * 2; // Example logic
+        let recommended = actualReq * 2; 
         let needPlannedQty = Math.max(0, recommended - totalStock);
         let planBatchNeed = batchSize > 0 ? (needPlannedQty / batchSize) : 0;
         
@@ -194,7 +457,7 @@
         if (totalStock === 0) {
             stockStatus = "Out of Stock";
             statusClass = "status-out";
-        } else if (totalStock < avgSale) {
+        } else if (totalStock < actualReq) {
             stockStatus = "Low Stock";
             statusClass = "status-low";
         } else if (needPlannedQty > 0) {
@@ -251,7 +514,7 @@
         let uniqueMaterialsSet = new Set();
         let stockMergeMap = {};
         let codeMappingRules = {}; 
-        let pureAvgSaleStore = {}; 
+        let pureActualReqStore = {}; 
 
         fileContentsArray.forEach(rawData => {
             const lines = rawData.trim().split('\n');
@@ -283,7 +546,7 @@
             const isTab = lines[0].includes('\t');
             let firstLine = parseCSVOrTabLine(lines[0], isTab);
 
-            let codeIdx = -1, descIdx = -1, plantNameIdx = -1, batchSizeIdx = -1, avgSaleIdx = -1, dateIdx = -1, qtyIdx = -1;
+            let codeIdx = -1, descIdx = -1, plantNameIdx = -1, batchSizeIdx = -1, actualReqIdx = -1, dateIdx = -1, qtyIdx = -1;
             let batchIdx = -1, mfgQtyIdx = -1, mfgDateIdx = -1, plantIdx = -1, whIdx = -1, procIdx = -1;
             let testIdx = -1, sapPlannedIdx = -1, remarkIdx = -1;
 
@@ -293,7 +556,7 @@
                 else if (hText.includes("description") || hText.includes("material desc")) descIdx = index;
                 else if (hText === "plant" || hText.includes("plant name")) plantNameIdx = index;
                 else if (hText.includes("batch size") || hText.includes("std batch")) batchSizeIdx = index;
-                else if (hText.includes("avg sale") || hText.includes("average sale")) avgSaleIdx = index;
+                else if (hText.includes("actual req") || hText.includes("actual requirement") || hText.includes("avg sale") || hText.includes("average sale")) actualReqIdx = index;
                 else if (hText.includes("planned order date")) dateIdx = index;
                 else if (hText.includes("planned order qty")) qtyIdx = index;
                 else if (hText.includes("last manufacture batch") || hText.includes("batch")) batchIdx = index;
@@ -320,7 +583,7 @@
                 const desc = descIdx !== -1 && cols[descIdx] ? cleanValue(cols[descIdx]) : '';
                 const plantName = plantNameIdx !== -1 && cols[plantNameIdx] ? cleanValue(cols[plantNameIdx]) : '';
                 const batchSize = batchSizeIdx !== -1 && cols[batchSizeIdx] ? Math.round(parseSmartNumber(cols[batchSizeIdx])) : 0;
-                const avgSale = avgSaleIdx !== -1 && cols[avgSaleIdx] ? Math.round(parseSmartNumber(cols[avgSaleIdx])) : 0;
+                const actualReq = actualReqIdx !== -1 && cols[actualReqIdx] ? Math.round(parseSmartNumber(cols[actualReqIdx])) : 0;
                 const plannedDate = dateIdx !== -1 && cols[dateIdx] ? cleanValue(cols[dateIdx]) : '';
                 const plannedQty = qtyIdx !== -1 && cols[qtyIdx] ? Math.round(parseSmartNumber(cols[qtyIdx])) : 0;
                 const mfgBatch = batchIdx !== -1 && cols[batchIdx] ? cleanValue(cols[batchIdx]) : '';
@@ -338,7 +601,7 @@
                 if (!stockMergeMap[code]) {
                     stockMergeMap[code] = {
                         desc: desc || code, plantStock: 0, whStock: 0, processOrder: 0, underTest: 0, sapPlanned: 0,
-                        mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: '-', batchSize: 0, remark: '', merged: false
+                        mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, actualReq: 0, plantName: '-', batchSize: 0, remark: '', merged: false
                     };
                 }
                 
@@ -350,8 +613,8 @@
                 if (underTest) stockMergeMap[code].underTest += underTest;
                 if (sapPlanned) stockMergeMap[code].sapPlanned += sapPlanned;
                 
-                if (avgSale > 0 && (!pureAvgSaleStore[code] || avgSaleIdx !== -1)) {
-                    pureAvgSaleStore[code] = avgSale;
+                if (actualReq > 0 && (!pureActualReqStore[code] || actualReqIdx !== -1)) {
+                    pureActualReqStore[code] = actualReq;
                 }
                 
                 if (mfgDate || mfgBatch) {
@@ -373,7 +636,7 @@
             }
         });
 
-        Object.keys(stockMergeMap).forEach(c => { stockMergeMap[c].avgSale = pureAvgSaleStore[c] || 0; });
+        Object.keys(stockMergeMap).forEach(c => { stockMergeMap[c].actualReq = pureActualReqStore[c] || 0; });
 
         Object.keys(codeMappingRules).forEach(oldCode => {
             const newCode = codeMappingRules[oldCode];
@@ -381,7 +644,7 @@
                 if (!stockMergeMap[newCode]) {
                     stockMergeMap[newCode] = {
                         desc: stockMergeMap[oldCode].desc, plantStock: 0, whStock: 0, processOrder: 0, underTest: 0, sapPlanned: 0,
-                        mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: stockMergeMap[oldCode].plantName, batchSize: stockMergeMap[oldCode].batchSize, remark: '', merged: false
+                        mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, actualReq: 0, plantName: stockMergeMap[oldCode].plantName, batchSize: stockMergeMap[oldCode].batchSize, remark: '', merged: false
                     };
                     uniqueMaterialsSet.add(newCode);
                 }
@@ -393,18 +656,18 @@
                 stockMergeMap[newCode].processOrder += stockMergeMap[oldCode].processOrder;
                 stockMergeMap[newCode].underTest += stockMergeMap[oldCode].underTest;
                 
-                const oldSaleVal = pureAvgSaleStore[oldCode] || 0;
-                const newSaleVal = pureAvgSaleStore[newCode] || 0;
-                stockMergeMap[newCode].avgSale = oldSaleVal + newSaleVal;
+                const oldReqVal = pureActualReqStore[oldCode] || 0;
+                const newReqVal = pureActualReqStore[newCode] || 0;
+                stockMergeMap[newCode].actualReq = oldReqVal + newReqVal;
 
-                let mergeNote = `Stock & Sale merged from old code: ${oldCode}`;
+                let mergeNote = `Stock & Requirement merged from old code: ${oldCode}`;
                 stockMergeMap[newCode].remark = stockMergeMap[newCode].remark ? `${stockMergeMap[newCode].remark} | ${mergeNote}` : mergeNote;
 
                 stockMergeMap[oldCode].plantStock = 0;
                 stockMergeMap[oldCode].whStock = 0;
                 stockMergeMap[oldCode].processOrder = 0;
                 stockMergeMap[oldCode].underTest = 0;
-                stockMergeMap[oldCode].avgSale = 0; 
+                stockMergeMap[oldCode].actualReq = 0; 
                 stockMergeMap[oldCode].sapPlanned = 0; 
                 stockMergeMap[oldCode].remark = `Replaced by new code: ${newCode}`;
                 stockMergeMap[oldCode].merged = true;
@@ -419,12 +682,12 @@
         rawParsedRows.sort((a, b) => a.code.localeCompare(b.code));
         generatedReportRows = [];
 
-        rawParsedRows.forEach((row) => {
+        rawParsedRows.forEach((row, index) => {
             const mergedStock = stockMergeMap[row.code];
             row.desc = mergedStock.desc;
             row.plantName = mergedStock.plantName;
             row.batchSize = Math.round(mergedStock.batchSize);
-            row.avgSale = Math.round(mergedStock.avgSale);
+            row.actualReq = Math.round(mergedStock.actualReq);
             row.mfgBatch = mergedStock.mfgBatch;
             row.mfgQty = Math.round(mergedStock.mfgQty);
             row.mfgDate = mergedStock.mfgDate;
@@ -434,13 +697,14 @@
             row.underTest = Math.round(mergedStock.underTest);
             row.sapPlanned = Math.round(mergedStock.sapPlanned);
 
-            const calc = calculateMetrics(row.code, mergedStock.remark, row.avgSale, row.plantStock, row.whStock, row.processOrder, row.sapPlanned, row.underTest, row.batchSize);
+            const calc = calculateMetrics(row.code, mergedStock.remark, row.actualReq, row.plantStock, row.whStock, row.processOrder, row.sapPlanned, row.underTest, row.batchSize);
             row.recommended = Math.round(calc.recommended);
             row.needPlannedQty = Math.round(calc.needPlannedQty);
             row.planBatchNeed = calc.planBatchNeed;
             row.stockStatus = calc.stockStatus;
             row.statusClass = calc.statusClass;
             row.remark = calc.finalRemark;
+            row.animationDelay = (index * 0.03).toFixed(2);
 
             generatedReportRows.push(row);
         });
@@ -494,6 +758,7 @@
 
             const groupStyleClass = toggleColorGroup ? 'group-even' : 'group-odd';
             tr.className = `data-row ${groupStyleClass} ${isGroupStart ? 'group-start' : ''}`;
+            tr.style.animationDelay = `${row.animationDelay || 0}s`;
 
             let htmlString = '';
             const spanCount = groupCounts[row.code];
@@ -505,7 +770,7 @@
                 const displayProcess = Math.round(row.processOrder).toLocaleString('en-US');
                 const displayTest = `<span class="${row.underTest > 0 ? 'badge-test' : ''}">${Math.round(row.underTest).toLocaleString('en-US')}</span>`;
                 const displaySAPPlanned = Math.round(row.sapPlanned).toLocaleString('en-US');
-                const displayAvgSale = Math.round(row.avgSale).toLocaleString('en-US');
+                const displayActualReq = Math.round(row.actualReq).toLocaleString('en-US');
                 const displayMfgQty = Math.round(row.mfgQty).toLocaleString('en-US');
                 const displayRecommended = `<strong style="color:var(--accent-blue); font-size:13.5px;">${Math.round(row.recommended).toLocaleString('en-US')}</strong>`;
                 const displayNeedPlannedQty = row.needPlannedQty > 0 
@@ -522,7 +787,7 @@
                     <td rowspan="${spanCount}" style="font-weight: 600;">${row.desc}</td>
                     <td rowspan="${spanCount}">${row.plantName}</td>
                     <td rowspan="${spanCount}">${displayBatchSize}</td>
-                    <td rowspan="${spanCount}">${displayAvgSale}</td>
+                    <td rowspan="${spanCount}">${displayActualReq}</td>
                     <td style="color:var(--accent-blue); font-weight:700;">${row.date}</td>
                     <td><span class="badge-qty">${Math.round(row.qty).toLocaleString('en-US')}</span></td>
                     <td rowspan="${spanCount}" style="font-family: monospace; font-weight: 700;">${row.mfgBatch}</td>
@@ -599,7 +864,7 @@
                         <th style="width:240px;">Material Description</th>
                         <th style="width:90px;">Plant</th>
                         <th style="width:100px;">Batch Size</th>
-                        <th style="width:85px;">Avg Sale</th>
+                        <th style="width:85px;">Actual Req.</th>
                         <th style="width:120px;">Planned Order Date</th>
                         <th style="width:115px;">Planned Order Qty</th>
                         <th style="width:130px;">Last Mfg Batch</th>
@@ -655,7 +920,7 @@
                     <td rowspan="${spanCount}" style="font-weight:600; color:#0f172a;">${row.desc}</td>
                     <td rowspan="${spanCount}" class="text-center">${row.plantName}</td>
                     <td rowspan="${spanCount}" class="num-cell">${row.batchSize > 0 ? row.batchSize.toLocaleString('en-US') : '-'}</td>
-                    <td rowspan="${spanCount}" class="num-cell">${row.avgSale.toLocaleString('en-US')}</td>
+                    <td rowspan="${spanCount}" class="num-cell">${row.actualReq.toLocaleString('en-US')}</td>
                     <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date}</td>
                     <td class="qty-badge">${row.qty.toLocaleString('en-US')}</td>
                     <td rowspan="${spanCount}" class="text-center" style="font-family:monospace; font-weight:bold; color:#334155;">${row.mfgBatch}</td>
