@@ -588,27 +588,68 @@ function updateLastModifiedTimeDisplay(isoString) {
     }
 }
 
-function fetchReportByDate() {
+// -------------------------------------------------------------
+// UPDATED SMART BACK-DATE FALLBACK LOGIC
+// -------------------------------------------------------------
+async function fetchReportByDate() {
     const selectedDate = document.getElementById('firebaseDatePicker').value;
     if (!selectedDate) { alert("⚠️ Please select a date first!"); return; }
     if (!window.firebaseDb) { alert("❌ Firebase is not initialized."); return; }
 
-    const datePath = `ppic_reports/history/${selectedDate}`;
-    window.dbGet(window.dbChild(window.dbRef(window.firebaseDb), datePath)).then((snapshot) => {
-        if (snapshot.exists()) {
-            const val = snapshot.val();
+    const exactDatePath = `ppic_reports/history/${selectedDate}`;
+    try {
+        const exactSnapshot = await window.dbGet(window.dbChild(window.dbRef(window.firebaseDb), exactDatePath));
+        if (exactSnapshot.exists()) {
+            const val = exactSnapshot.val();
             if (val && val.data) {
                 generatedReportRows = val.data;
                 updateTableFilterDropdowns();
                 renderTable();
                 updateLastModifiedTimeDisplay(val.lastUpdated);
-                alert(`✅ Successfully loaded report for date: ${selectedDate}`);
-            } else { alert(`⚠️ Data format invalid for date: ${selectedDate}`); }
-        } else {
-            alert(`❌ No report found in Firebase for date: ${selectedDate}. Falling back to 'latest'.`);
-            loadFromFirebase();
+                alert(`✅ Successfully loaded report for exact date: ${selectedDate}`);
+                return;
+            }
         }
-    }).catch((error) => { alert("❌ Error fetching data: " + error.message); });
+
+        // Agar exact date ka data na mile, toh saari history fetch karke closest back-date find karenge
+        const historyRef = window.dbRef(window.firebaseDb, 'ppic_reports/history');
+        const historySnapshot = await window.dbGet(historyRef);
+        
+        if (historySnapshot.exists()) {
+            const historyData = historySnapshot.val();
+            const availableDates = Object.keys(historyData).sort(); // chronological sorting
+            
+            // Selected date se pehle ki ya sabse nazdeeki date dhundhein
+            let fallbackDate = null;
+            for (let i = availableDates.length - 1; i >= 0; i--) {
+                if (availableDates[i] <= selectedDate) {
+                    fallbackDate = availableDates[i];
+                    break;
+                }
+            }
+
+            // Agar pehle ki date nahi mili, toh sabse pehli available date le lenge
+            if (!fallbackDate && availableDates.length > 0) {
+                fallbackDate = availableDates[0];
+            }
+
+            if (fallbackDate && historyData[fallbackDate] && historyData[fallbackDate].data) {
+                generatedReportRows = historyData[fallbackDate].data;
+                updateTableFilterDropdowns();
+                renderTable();
+                updateLastModifiedTimeDisplay(historyData[fallbackDate].lastUpdated);
+                alert(`⚠️ Data not found for ${selectedDate}. Automatically loaded closest back-date data from: ${fallbackDate}`);
+                document.getElementById('firebaseDatePicker').value = fallbackDate; // Date picker ko update kar dena
+                return;
+            }
+        }
+
+        alert(`❌ No report found in Firebase for date: ${selectedDate} or any prior back-date. Falling back to 'latest'.`);
+        loadFromFirebase();
+
+    } catch (error) {
+        alert("❌ Error fetching data: " + error.message);
+    }
 }
 
 function saveToFirebaseWithDate() {
@@ -1040,7 +1081,7 @@ function processMultipleSAPData(fileContentsArray) {
 function renderTable() {
     const tableBody = document.getElementById('tableBody');
     tableBody.innerHTML = '';
-    
+
     const filterCodeVal = document.getElementById('filterCode').value.trim().toUpperCase();
     const filterDescVal = document.getElementById('filterDesc').value.trim().toUpperCase();
     const filterPlantVal = document.getElementById('filterPlant').value;
