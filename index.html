@@ -1,311 +1,1141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPIC Executive Dashboard - Psychotropics India Limited</title>
-    <style>
-        :root {
-            --primary: #0F172A;
-            --primary-light: #1E3A8A;
-            --accent-blue: #2563EB;
-            --bg-main: #F8FAFC;
-            --card-bg: #FFFFFF;
-            --text-main: #1E293B;
-            --text-muted: #64748B;
-            --border-color: #CBD5E1;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPIC - Unified Material Control Matrix (Executive Edition)</title>
+<style>
+    :root {
+        --bg-main: #f8fafc;
+        --bg-card: #ffffff;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #cbd5e1;
+        --accent-blue: #1e3a8a;
+        --accent-hover: #1e40af;
+        --table-header-bg: #1e3a8a;
+        --table-header-color: #ffffff;
+        --group-even: #ffffff;
+        --group-odd: #f8fafc;
+        --modal-overlay: rgba(15, 23, 42, 0.65);
+        --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+        --shadow-lg: 0 20px 40px rgba(0,0,0,0.15);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    [data-theme="dark"] {
+        --bg-main: #0b0f19;
+        --bg-card: #1e293b;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --border-color: #334155;
+        --accent-blue: #38bdf8;
+        --accent-hover: #7dd3fc;
+        --table-header-bg: #020617;
+        --table-header-color: #f8fafc;
+        --group-even: #1e293b;
+        --group-odd: #0f172a;
+        --modal-overlay: rgba(0, 0, 0, 0.85);
+        --shadow-sm: 0 4px 12px rgba(0,0,0,0.3);
+        --shadow-lg: 0 20px 40px rgba(0,0,0,0.5);
+    }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-        .dashboard-container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 24px;
-            width: 100%;
-        }
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
 
-        .header-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: #FFFFFF;
-            padding: 24px 32px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        margin: 0;
+        padding: 20px;
+        transition: background 0.3s ease, color 0.3s ease;
+        animation: fadeIn 0.4s ease-out;
+    }
 
-        .header-title h1 {
-            font-size: 20pt;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
+    .container {
+        max-width: 100%;
+        margin: 0 auto;
+    }
 
-        .header-title p {
-            font-size: 10pt;
-            color: #93C5FD;
-        }
+    #authOverlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: var(--modal-overlay);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(6px);
+        animation: fadeIn 0.3s ease;
+    }
+    .auth-card {
+        background: var(--bg-card);
+        padding: 35px;
+        border-radius: 14px;
+        width: 420px;
+        max-width: 90%;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        text-align: center;
+        animation: fadeIn 0.4s ease-out;
+    }
+    .auth-card h2 { margin-top: 0; color: var(--text-main); font-size: 24px; font-weight: 700; }
+    .auth-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
+    .form-group { margin-bottom: 18px; text-align: left; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+    .form-group input {
+        width: 100%; padding: 11px 14px; border: 1px solid var(--border-color);
+        border-radius: 8px; background: var(--bg-main); color: var(--text-main); font-size: 14px;
+        box-sizing: border-box; transition: all 0.2s;
+    }
+    .form-group input:focus {
+        border-color: var(--accent-blue);
+        outline: none;
+        animation: pulseGlow 1.5s infinite;
+    }
+    .auth-btn {
+        width: 100%; padding: 12px; background: var(--accent-blue); color: #ffffff; border: none;
+        border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+        margin-top: 10px;
+    }
+    .auth-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .auth-toggle { margin-top: 18px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+    .auth-toggle span { color: var(--accent-blue); font-weight: 600; text-decoration: underline; }
 
-        .btn {
-            background: var(--accent-blue);
-            color: #FFFFFF;
-            border: none;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 10pt;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+    .header-panel {
+        background: var(--bg-card);
+        padding: 22px 28px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        border: 1px solid var(--border-color);
+        transition: transform 0.2s;
+    }
 
-        .btn-success {
-            background: #059669;
-        }
+    .title-section h1 {
+        margin: 0;
+        font-size: 23px;
+        color: var(--text-main);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
 
-        .filters-card {
-            background: var(--card-bg);
-            padding: 18px 24px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+    .title-section p {
+        margin: 4px 0 0 0;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
 
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            min-width: 180px;
-        }
+    .user-session-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #059669;
+        background: rgba(5, 150, 105, 0.08);
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(5, 150, 105, 0.2);
+    }
 
-        .filter-group label {
-            font-size: 9pt;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
+    .last-update-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        background: rgba(30, 58, 138, 0.08);
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(30, 58, 138, 0.2);
+        margin-left: 8px;
+    }
 
-        .filter-group input, .filter-group select {
-            padding: 9px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 9.5pt;
-            outline: none;
-            background: #F8FAFC;
-        }
+    .controls-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
 
-        .table-card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
+    .btn {
+        padding: 9px 15px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
 
-        /* Yahan table container ko height aur scrollable banaya hai */
-        .table-container {
-            max-height: 72vh;
-            overflow-y: auto;
-            position: relative;
-        }
+    .btn:hover { opacity: 0.95; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: #1e3a8a; color: #ffffff; }
+    .btn-success { background: #059669; color: #ffffff; }
+    .btn-warning { background: #d97706; color: #ffffff; }
+    .btn-secondary { background: #475569; color: #ffffff; }
+    .btn-info { background: #0284c7; color: #ffffff; }
+    .btn-danger { background: #dc2626; color: #ffffff; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            white-space: nowrap;
-        }
+    .drop-zone {
+        border: 2px dashed var(--border-color);
+        padding: 24px;
+        text-align: center;
+        border-radius: 12px;
+        background: var(--bg-card);
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+    }
+    .drop-zone:hover { border-color: var(--accent-blue); transform: scale(1.002); }
+    .drop-zone.dragover { background: rgba(30, 58, 138, 0.05); border-color: var(--accent-blue); }
 
-        /* Yeh heading ko freeze (sticky) rakhega scroll karte waqt */
-        th {
-            background-color: var(--primary) !important;
-            color: #FFFFFF !important;
-            font-size: 9pt;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 14px 12px;
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            border-bottom: 2px solid #334155;
-        }
+    /* STICKY / FROZEN TABLE HEADERS */
+    .table-responsive {
+        background: var(--bg-card);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        max-height: 75vh;
+        overflow-y: auto;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        position: relative;
+    }
 
-        td {
-            font-size: 9pt;
-            padding: 10px 12px;
-            border-bottom: 1px solid #E2E8F0;
-            border-right: 1px solid #F1F5F9;
-        }
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        text-align: left;
+        font-size: 13px;
+    }
 
-        .group-even { background-color: #FFFFFF; }
-        .group-odd { background-color: #F8FAFC; }
-        .group-start td { border-top: 2px solid #CBD5E1; }
+    th, td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
 
-        .mat-code {
-            background-color: #EFF6FF;
-            color: var(--accent-blue);
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            border: 1px solid #BFDBFE;
-        }
+    /* Freezing Header row 1 */
+    thead tr:nth-child(1) th {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background-color: var(--table-header-bg);
+        color: var(--table-header-color);
+        box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+    }
 
-        .badge-qty {
-            background-color: #DCFCE7;
-            color: #15803D;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
+    /* Freezing Header filter row 2 */
+    thead tr:nth-child(2) th,
+    thead tr.filter-row th,
+    .filter-row {
+        position: sticky;
+        top: 43px; /* height of row 1 approx */
+        z-index: 19;
+        background-color: var(--bg-card);
+        box-shadow: 0 2px 2px rgba(0,0,0,0.08);
+    }
 
-        .badge-test {
-            background-color: #FFEDD5;
-            color: #C2410C;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
+    th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
 
-        .badge-need-planned {
-            background-color: #FDF2F8;
-            color: #BE185D;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
+    .group-even { background-color: var(--group-even); }
+    .group-odd { background-color: var(--group-odd); }
+    .group-start { border-top: 2px solid var(--border-color); }
+    .data-row { transition: background-color 0.15s ease; }
+    .data-row:hover { background-color: rgba(30, 58, 138, 0.04); }
 
-        .badge-batch-need {
-            background-color: #EEF2FF;
-            color: #4338CA;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 11px;
+        display: inline-block;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .status-sufficient { background: #d1fae5; color: #065f46; }
+    .status-low { background: #fef3c7; color: #92400e; }
+    .status-out { background: #fee2e2; color: #991b1b; }
+    .status-to-order { background: #e0e7ff; color: #3730a3; }
+    .status-need-planned { background: #fce7f3; color: #9d174d; }
+    .status-none { color: var(--text-muted); }
 
-        .badge-remark {
-            background-color: #FEF3C7;
-            color: #92400E;
-            font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 4px;
-            border: 1px solid #FDE68A;
-        }
+    .badge-qty { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+    .badge-test { background: #ffedd5; color: #c2410c; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+    .badge-need-planned { background: #fdf2f8; color: #be185d; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+    .badge-batch-need { background: #eef2ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+    .badge-remark { background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+    .mat-code { font-family: monospace; font-weight: 700; color: var(--accent-blue); }
+    .no-data-msg { text-align: center; padding: 50px; color: var(--text-muted); }
 
-        .status-badge {
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 6px;
-            text-align: center;
-            display: inline-block;
-        }
+    .filter-row td input, .filter-row td select {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-size: 12px;
+        box-sizing: border-box;
+    }
 
-        .status-sufficient { background-color: #D1FAE5; color: #065F46; }
-        .status-low { background-color: #FEF3C7; color: #92400E; }
-        .status-out { background-color: #FEE2E2; color: #991B1B; }
-        .status-to-order { background-color: #E0E7FF; color: #3730A3; }
-        .status-need-planned { background-color: #FCE7F3; color: #9D174D; }
-
-        .no-data-msg {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 11pt;
-        }
-    </style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background-color: var(--modal-overlay);
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease;
+    }
+    .modal-content {
+        background: var(--bg-card);
+        padding: 30px;
+        border-radius: 14px;
+        width: 480px;
+        max-width: 90%;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-lg);
+        animation: fadeIn 0.3s ease-out;
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
+    .close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
+    .close-btn:hover { color: var(--text-main); }
+    .template-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+</style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <div class="header-card">
-            <div class="header-title">
-                <h1>PSYCHOTROPICS INDIA LIMITED</h1>
-                <p>PPIC Unified Material Control Matrix & Dynamic Reorder Analytics Dashboard</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-success" onclick="exportProcessedData()">📥 Export Excel Report</button>
+<div id="authOverlay">
+    <div class="auth-card" id="authCardBox">
+        <h2 id="authCardTitle">PPIC Office Portal</h2>
+        <p id="authCardSub">Secure Authentication & Live Multi-User Matrix</p>
+        
+        <div class="form-group">
+            <label>Corporate Email ID</label>
+            <input type="email" id="authEmail" placeholder="employee@company.com">
+        </div>
+        <div class="form-group">
+            <label>Secure Password</label>
+            <input type="password" id="authPassword" placeholder="••••••••">
+        </div>
+        
+        <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthAction()">Sign In to Dashboard</button>
+        
+        <div class="auth-toggle" id="authToggleMode" onclick="toggleAuthMode()">
+            Don't have an account? <span>Register New ID</span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-panel">
+        <div class="title-section">
+            <h1>PPIC - Unified Material Control Matrix</h1>
+            <p>Dynamic Reorder Analytics & Production Planning Automation</p>
+            <div>
+                <span id="userSessionBadge" class="user-session-badge">👤 <span id="loggedInUserText">Guest</span></span>
+                <span id="lastUpdateIndicator" class="last-update-badge">
+                    🕒 Last Updated: <span id="lastUpdateTimeText">Not Loaded Yet</span>
+                </span>
             </div>
         </div>
-
-        <div class="filters-card">
-            <div class="filter-group">
-                <label for="filterCode">Material Code</label>
-                <input type="text" id="filterCode" placeholder="Search Code..." oninput="renderTable()">
-            </div>
-            <div class="filter-group">
-                <label for="filterDesc">Material Description</label>
-                <input type="text" id="filterDesc" placeholder="Search Description..." oninput="renderTable()">
-            </div>
-            <div class="filter-group">
-                <label for="filterPlant">Plant</label>
-                <select id="filterPlant" onchange="renderTable()">
-                    <option value="ALL">All Plants</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="filterStatus">Stock Status</label>
-                <select id="filterStatus" onchange="renderTable()">
-                    <option value="ALL">All Statuses</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Table Container wrapper added for freeze heading support -->
-        <div class="table-card">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:110px;">Material Code</th>
-                            <th style="width:240px;">Material Description</th>
-                            <th style="width:90px;">Plant</th>
-                            <th style="width:100px;">Batch Size</th>
-                            <th style="width:85px;">Avg Sale</th>
-                            <th style="width:120px;">Planned Order Date</th>
-                            <th style="width:115px;">Planned Order Qty</th>
-                            <th style="width:130px;">Last Mfg Batch</th>
-                            <th style="width:105px;">Last Mfg Qty</th>
-                            <th style="width:105px;">Last Mfg Date</th>
-                            <th style="width:95px;">Plant Stock</th>
-                            <th style="width:95px;">Total WH Stock</th>
-                            <th style="width:95px;">Process Order</th>
-                            <th style="width:90px;">Under Test</th>
-                            <th style="width:100px;">SAP Planned</th>
-                            <th style="width:110px;">Recommended</th>
-                            <th style="width:140px;">Need Planned Order Qty</th>
-                            <th style="width:130px;">Plan Batch Need</th>
-                            <th style="width:140px;">Stock Status</th>
-                            <th style="width:160px;">Product Remark</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr><td colspan="20" class="no-data-msg">📊 No SAP files loaded into memory. Upload your data sources to visualize the analytics matrix.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="controls-section">
+            <button class="btn btn-info" onclick="openTemplateModal()">📥 Templates</button>
+            <input type="date" id="firebaseDatePicker" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
+            <button class="btn btn-primary" onclick="fetchReportByDate()">📅 Fetch Date</button>
+            <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save Cloud</button>
+            <button class="btn btn-warning" onclick="reloadUploadedFiles()">🔄 Refresh</button>
+            <button class="btn btn-primary" onclick="exportProcessedData()">📊 Export</button>
+            <button class="btn btn-danger" onclick="logoutUser()" style="padding: 9px 12px;" title="Logout">🚪</button>
+            <select id="themeSelect" onchange="changeTheme(this.value)" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
+                <option value="default">Light Theme</option>
+                <option value="dark">Dark Theme</option>
+            </select>
         </div>
     </div>
 
+    <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileUpload()">
+        <div id="uploadLabel">
+            <span style="font-weight: 600; color: var(--accent-blue);">📁 Click to Upload SAP Files / Templates</span> or Drag & Drop multiple data files here
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Material Code</th>
+                    <th>Material Description</th>
+                    <th>Plant</th>
+                    <th>Batch Size</th>
+                    <th>Avg Sale</th>
+                    <th>Planned Order Date</th>
+                    <th>Planned Order Qty</th>
+                    <th>Last Mfg Batch</th>
+                    <th>Last Mfg Qty</th>
+                    <th>Last Mfg Date</th>
+                    <th>Plant Stock</th>
+                    <th>Total WH Stock</th>
+                    <th>Process Order</th>
+                    <th>Under Test</th>
+                    <th>SAP Planned</th>
+                    <th>Recommended</th>
+                    <th>Need Planned Order Qty</th>
+                    <th>Plan Batch Need</th>
+                    <th>Stock Status</th>
+                    <th>Product Remark</th>
+                </tr>
+                <tr class="filter-row">
+                    <td><input type="text" id="filterCode" placeholder="Filter Code..." onkeyup="renderTable()"></td>
+                    <td><input type="text" id="filterDesc" placeholder="Filter Desc..." onkeyup="renderTable()"></td>
+                    <td>
+                        <select id="filterPlant" onchange="renderTable()">
+                            <option value="ALL">All Plants</option>
+                        </select>
+                    </td>
+                    <td colspan="2"></td>
+                    <td colspan="2"></td>
+                    <td colspan="3"></td>
+                    <td colspan="5"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <select id="filterStatus" onchange="renderTable()">
+                            <option value="ALL">All Status</option>
+                        </select>
+                    </td>
+                    <td><button class="btn btn-secondary" style="font-size:10px; padding:6px 8px; width:100%;" onclick="resetAllFilters()">Reset</button></td>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td colspan="20" class="no-data-msg">
+                        📊 No SAP files loaded into memory. Upload your data sources to visualize the analytics matrix.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="templateModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📥 Download SAP / Data Templates</h3>
+            <button class="close-btn" onclick="closeTemplateModal()">&times;</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 0;">In templates mein data fill karke aap direct yahan upload kar sakte hain:</p>
+        <div class="template-list">
+            <button class="btn btn-primary" onclick="downloadTemplate('stock')">📄 1. Stock & Material Master Template</button>
+            <button class="btn btn-primary" onclick="downloadTemplate('planned')">📄 2. Planned Orders Template</button>
+            <button class="btn btn-primary" onclick="downloadTemplate('mfg')">📄 3. Manufacturing History Template</button>
+            <button class="btn btn-primary" onclick="downloadTemplate('mapping')">📄 4. Old to New Code Mapping Template</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAcF5pIIc_daPi2gEgNW1YFMkVBviyFdHI",
+        authDomain: "ppic-dashboard-f5f95.firebaseapp.com",
+        databaseURL: "https://ppic-dashboard-f5f95-default-rtdb.firebaseio.com",
+        projectId: "ppic-dashboard-f5f95",
+        storageBucket: "ppic-dashboard-f5f95.appspot.com",
+        messagingSenderId: "856882762391",
+        appId: "1:856882762391:web:f13cda673aca7439fb8fd2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+
+    window.firebaseDb = database;
+    window.firebaseAuth = auth;
+    window.dbRef = ref;
+    window.dbSet = set;
+    window.dbGet = get;
+    window.dbChild = child;
+    window.dbOnValue = onValue;
+    window.createUserAuth = createUserWithEmailAndPassword;
+    window.signInAuth = signInWithEmailAndPassword;
+    window.signOutAuth = signOut;
+
+    // Unique session ID for single-device restriction per user
+    const currentBrowserSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    window.currentBrowserSessionId = currentBrowserSessionId;
+    let sessionListenerUnsubscribe = null;
+
+    onAuthStateChanged(auth, async (user) => {
+        const overlay = document.getElementById('authOverlay');
+        if (user) {
+            const emailKey = user.email.replace(/[.#$\/\[\]]/g, "_");
+            const userRef = ref(database, `ppic_users/${emailKey}`);
+            
+            try {
+                // Single Session Control: Register current session ID in Firebase
+                await set(child(userRef, 'activeSessionId'), currentBrowserSessionId);
+
+                // Listen for session overwrite (another device logged in)
+                if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
+                sessionListenerUnsubscribe = onValue(child(userRef, 'activeSessionId'), (snapshot) => {
+                    const activeSession = snapshot.val();
+                    if (activeSession && activeSession !== window.currentBrowserSessionId) {
+                        alert("⚠️ Your account was signed in from another device or browser session. You have been logged out.");
+                        signOut(auth).then(() => { location.reload(); });
+                    }
+                });
+
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    if (userData.status === "approved" || user.email === "ppic@pilindia.in") {
+                        overlay.style.display = 'none';
+                        document.getElementById('loggedInUserText').innerText = user.email;
+                        loadFromFirebase();
+                        initInactivityTimer();
+                    } else {
+                        overlay.style.display = 'flex';
+                        document.getElementById('authCardBox').innerHTML = `
+                            <h2>⏳ Pending Authorization</h2>
+                            <p>Your ID (${user.email}) is awaiting Admin approval. Please contact the administrator to authorize your login access.</p>
+                            <button class="auth-btn" onclick="logoutUser()">Sign Out / Back</button>
+                        `;
+                    }
+                } else {
+                    await set(userRef, { email: user.email, status: "pending", createdAt: new Date().toISOString(), activeSessionId: currentBrowserSessionId });
+                    overlay.style.display = 'flex';
+                    document.getElementById('authCardBox').innerHTML = `
+                        <h2>⏳ Verification Required</h2>
+                        <p>Registration successful for <strong>${user.email}</strong>! First-time login requires administrator authorization before dashboard access is granted.</p>
+                        <button class="auth-btn" onclick="logoutUser()">Back to Login</button>
+                    `;
+                }
+            } catch (err) {
+                console.error("Auth check error:", err);
+            }
+        } else {
+            overlay.style.display = 'flex';
+            if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
+        }
+    });
+</script>
+
 <script>
-// ==========================================
-// PART 1: DATA PROCESSING & MAPPING LOGIC
-// ==========================================
+let generatedReportRows = [];
+let cachedFileContents = [];
+let isRegisterMode = false;
+let inactivityTimer = null;
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Minutes
+
+function initInactivityTimer() {
+    resetInactivityTimer();
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
+        window.addEventListener(eventName, resetInactivityTimer, { passive: true });
+    });
+}
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    if (!window.firebaseAuth.currentUser) return;
+    inactivityTimer = setTimeout(() => {
+        alert("🔒 You have been automatically logged out due to 30 minutes of inactivity.");
+        logoutUser();
+    }, INACTIVITY_LIMIT_MS);
+}
+
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const title = document.getElementById('authCardTitle');
+    const sub = document.getElementById('authCardSub');
+    const btn = document.getElementById('authSubmitBtn');
+    const toggle = document.getElementById('authToggleMode');
+
+    if (isRegisterMode) {
+        title.innerText = "Register New Account";
+        sub.innerText = "Create credentials for office access verification";
+        btn.innerText = "Register & Request Access";
+        toggle.innerHTML = `Already have an account? <span>Sign In</span>`;
+    } else {
+        title.innerText = "PPIC Office Portal";
+        sub.innerText = "Secure Authentication & Live Multi-User Matrix";
+        btn.innerText = "Sign In to Dashboard";
+        toggle.innerHTML = `Don't have an account? <span>Register New ID</span>`;
+    }
+}
+
+async function handleAuthAction() {
+    const email = document.getElementById('authEmail').value.trim();
+    const pass = document.getElementById('authPassword').value.trim();
+
+    if (!email || !pass) {
+        alert("⚠️ Please enter both Email and Password!");
+        return;
+    }
+
+    try {
+        if (isRegisterMode) {
+            await window.createUserAuth(window.firebaseAuth, email, pass);
+            alert("✅ Registration complete! Your account is pending admin verification.");
+        } else {
+            await window.signInAuth(window.firebaseAuth, email, pass);
+        }
+    } catch (error) {
+        alert("❌ Authentication Error: " + error.message);
+    }
+}
+
+function logoutUser() {
+    window.signOutAuth(window.firebaseAuth).then(() => {
+        location.reload();
+    });
+}
+
+function openTemplateModal() { document.getElementById('templateModal').style.display = 'flex'; }
+function closeTemplateModal() { document.getElementById('templateModal').style.display = 'none'; }
+
+function downloadTemplate(type) {
+    let headers = [];
+    let sampleData = [];
+    let filename = '';
+
+    if (type === 'stock') {
+        filename = 'Stock_Master_Template.csv';
+        headers = ['Material Code', 'Material Description', 'Plant', 'Batch Size', 'Avg Sale', 'Plant Stock', 'Total WH Stock', 'Process Order', 'Under Test', 'SAP Planned', 'Product Remark'];
+        sampleData = ['RM1001', 'Sample Material A', 'Plant 1', '1000', '500', '2000', '1500', '500', '200', '1000', '-'];
+    } else if (type === 'planned') {
+        filename = 'Planned_Orders_Template.csv';
+        headers = ['Material Code', 'Planned Order Date', 'Planned Order Qty'];
+        sampleData = ['RM1001', '2026-06-30', '1000'];
+    } else if (type === 'mfg') {
+        filename = 'Mfg_History_Template.csv';
+        headers = ['Material Code', 'Last Manufacture Batch', 'Last Manufactured Qty', 'Last Manufactured Date'];
+        sampleData = ['RM1001', 'BATCH001', '1000', '2026-05-15'];
+    } else if (type === 'mapping') {
+        filename = 'Code_Mapping_Template.csv';
+        headers = ['Old Material Code', 'New Material Code'];
+        sampleData = ['OLD999', 'RM1001'];
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + sampleData.join(",");
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    closeTemplateModal();
+}
+
+function updateLastModifiedTimeDisplay(isoString) {
+    const textSpan = document.getElementById('lastUpdateTimeText');
+    if (!textSpan) return;
+    if (!isoString) {
+        textSpan.innerText = "Just Now (" + new Date().toLocaleString() + ")";
+        return;
+    }
+    const dateObj = new Date(isoString);
+    if (!isNaN(dateObj.getTime())) {
+        textSpan.innerText = dateObj.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } else {
+        textSpan.innerText = isoString;
+    }
+}
+
+async function fetchReportByDate() {
+    const selectedDate = document.getElementById('firebaseDatePicker').value;
+    if (!selectedDate) { alert("⚠️ Please select a date first!"); return; }
+    if (!window.firebaseDb) { alert("❌ Firebase is not initialized."); return; }
+
+    const exactDatePath = `ppic_reports/history/${selectedDate}`;
+    try {
+        const exactSnapshot = await window.dbGet(window.dbChild(window.dbRef(window.firebaseDb), exactDatePath));
+        if (exactSnapshot.exists()) {
+            const val = exactSnapshot.val();
+            if (val && val.data) {
+                generatedReportRows = val.data;
+                updateTableFilterDropdowns();
+                renderTable();
+                updateLastModifiedTimeDisplay(val.lastUpdated);
+                alert(`✅ Successfully loaded report for exact date: ${selectedDate}`);
+                return;
+            }
+        }
+
+        const historyRef = window.dbRef(window.firebaseDb, 'ppic_reports/history');
+        const historySnapshot = await window.dbGet(historyRef);
+        
+        if (historySnapshot.exists()) {
+            const historyData = historySnapshot.val();
+            const availableDates = Object.keys(historyData).sort();
+            
+            let fallbackDate = null;
+            for (let i = availableDates.length - 1; i >= 0; i--) {
+                if (availableDates[i] <= selectedDate) {
+                    fallbackDate = availableDates[i];
+                    break;
+                }
+            }
+
+            if (!fallbackDate && availableDates.length > 0) {
+                fallbackDate = availableDates[0];
+            }
+
+            if (fallbackDate && historyData[fallbackDate] && historyData[fallbackDate].data) {
+                generatedReportRows = historyData[fallbackDate].data;
+                updateTableFilterDropdowns();
+                renderTable();
+                updateLastModifiedTimeDisplay(historyData[fallbackDate].lastUpdated);
+                alert(`⚠️ Data not found for ${selectedDate}. Automatically loaded closest back-date data from: ${fallbackDate}`);
+                document.getElementById('firebaseDatePicker').value = fallbackDate;
+                return;
+            }
+        }
+
+        alert(`❌ No report found in Firebase for date: ${selectedDate} or any prior back-date. Falling back to 'latest'.`);
+        loadFromFirebase();
+
+    } catch (error) {
+        alert("❌ Error fetching data: " + error.message);
+    }
+}
+
+function saveToFirebaseWithDate() {
+    if (!window.firebaseDb) { alert("Firebase initialization missing."); return; }
+    if (generatedReportRows.length === 0) { alert("Upload Data! No data to save."); return; }
+
+    const currentTimestampISO = new Date().toISOString();
+    const todayDateStr = new Date().toISOString().slice(0, 10);
+    const payload = { lastUpdated: currentTimestampISO, data: generatedReportRows };
+
+    const latestRef = window.dbRef(window.firebaseDb, 'ppic_reports/latest');
+    const historyRef = window.dbRef(window.firebaseDb, `ppic_reports/history/${todayDateStr}`);
+
+    Promise.all([
+        window.dbSet(latestRef, payload),
+        window.dbSet(historyRef, payload)
+    ]).then(() => {
+        updateLastModifiedTimeDisplay(currentTimestampISO);
+        alert("✅ Dynamic Report Matrix saved to Firebase Cloud successfully!");
+    }).catch((error) => { alert("❌ Firebase Error: " + error.message); });
+}
+
+function loadFromFirebase() {
+    if (!window.firebaseDb) return;
+    const dbRef = window.dbRef(window.firebaseDb);
+    window.dbGet(window.dbChild(dbRef, 'ppic_reports/latest')).then((snapshot) => {
+        if (snapshot.exists()) {
+            const val = snapshot.val();
+            if (val && val.data) {
+                generatedReportRows = val.data;
+                updateTableFilterDropdowns();
+                renderTable();
+                updateLastModifiedTimeDisplay(val.lastUpdated);
+            }
+        }
+    }).catch((error) => { console.error("Error pulling data from Firebase:", error); });
+}
+
+function changeTheme(themeName) {
+    document.body.setAttribute('data-theme', themeName);
+    localStorage.setItem('ppic_dashboard_theme', themeName);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('ppic_dashboard_theme') || 'default';
+    document.body.setAttribute('data-theme', savedTheme);
+    const themeSelect = document.getElementById('themeSelect');
+    if (themeSelect) themeSelect.value = savedTheme;
+});
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+dropZone.addEventListener('click', () => fileInput.click());
+
+['dragenter', 'dragover'].forEach(name => {
+    dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); }, false);
+});
+['dragleave', 'drop'].forEach(name => {
+    dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); }, false);
+});
+dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    if (dt.files.length > 0) { fileInput.files = dt.files; handleFileUpload(); }
+}, false);
+
+function handleFileUpload() {
+    const files = Array.from(fileInput.files);
+    if (files.length === 0) return;
+
+    let readPromises = files.map(file => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsText(file);
+        });
+    });
+
+    Promise.all(readPromises).then(results => {
+        cachedFileContents = results;
+        document.getElementById('uploadLabel').innerHTML = `
+            <span style="color:#059669; font-weight:700;">✅ ${files.length} File(s) Successfully Loaded</span>
+            <span class="sub-text">Click 'Refresh' anytime to re-process files in memory</span>
+        `;
+        processMultipleSAPData(cachedFileContents);
+    });
+}
+
+function reloadUploadedFiles() {
+    if (cachedFileContents.length === 0) { alert("Upload Files! No uploaded data found in memory."); return; }
+    processMultipleSAPData(cachedFileContents);
+}
+
+function cleanValue(val) {
+    if (!val) return '';
+    return val.trim().replace(/^["']|["']$/g, '').trim();
+}
+
+function parseSmartNumber(valStr) {
+    if (!valStr) return 0;
+    let clean = cleanValue(valStr);
+    if (!clean) return 0;
+    if (clean.includes(',') && clean.includes('.')) {
+        if (clean.indexOf('.') < clean.indexOf(',')) { clean = clean.replace(/\./g, '').replace(',', '.'); }
+        else { clean = clean.replace(/,/g, ''); }
+    } else if (clean.includes(',')) {
+        if (/^\d{1,3}(,\d{3})+$/.test(clean)) { clean = clean.replace(/,/g, ''); }
+        else { clean = clean.replace(',', '.'); }
+    }
+    let parsed = parseFloat(clean);
+    return isNaN(parsed) ? 0 : parsed;
+}
+
+function parseCSVOrTabLine(line, isTab) {
+    if (isTab) return line.split('\t');
+    let result = []; let current = ''; let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        let char = line[i];
+        if (char === '"' || char === "'") { inQuotes = !inQuotes; }
+        else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
+        else { current += char; }
+    }
+    result.push(current);
+    return result;
+}
+
+function parseDateVal(dateStr) {
+    if (!dateStr || dateStr === 'N/A' || dateStr === '-' || dateStr === '0') return 0;
+    let cleanStr = String(dateStr).trim();
+    if (/^\d{4}[\.\-\/]\d{1,2}[\.\-\/]\d{1,2}$/.test(cleanStr)) {
+        let parts = cleanStr.split(/[\.\-\/]/);
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime() || 0;
+    }
+    let parts = cleanStr.split(/[\.\-\/]/);
+    if (parts.length === 3) {
+        let day = parseInt(parts[0], 10); let month = parseInt(parts[1], 10) - 1; let year = parseInt(parts[2], 10);
+        if (isNaN(day) || isNaN(month) || isNaN(year)) return 0;
+        if (year < 100) year += 2000;
+        return new Date(year, month, day).getTime() || 0;
+    }
+    const parsed = Date.parse(cleanStr);
+    return !isNaN(parsed) ? parsed : 0;
+}
+
+function calculateMetrics(code, rawRemark, avgSale, plantStock, whStock, processOrder, sapPlanned, underTest, batchSize) {
+    const totalStock = plantStock + whStock;
+    const totalEffectiveStock = totalStock + processOrder + underTest;
+    const codeStr = String(code).trim();
+    const isStartsWith24 = codeStr.startsWith("24");
+
+    let recommended = (avgSale * 1) - totalEffectiveStock;
+    if (recommended < 0) recommended = 0;
+
+    const cleanRemark = String(rawRemark || '').trim();
+    const hasProductRemark = (cleanRemark !== '' && cleanRemark !== '0' && cleanRemark !== '-' && cleanRemark.toLowerCase() !== 'null');
+
+    let stockStatus = "Sufficient";
+    let statusClass = "status-sufficient";
+    let needPlannedQty = 0;
+
+    const isOldReplacedCode = hasProductRemark && cleanRemark.toLowerCase().includes("replaced by new code");
+
+    if (isOldReplacedCode) {
+        recommended = 0; stockStatus = "-"; statusClass = "status-none"; needPlannedQty = 0;
+    } else {
+        if (isStartsWith24) {
+            stockStatus = recommended > 0 ? "TO BE ORDERED" : "Sufficient";
+            statusClass = recommended > 0 ? "status-to-order" : "status-sufficient";
+            needPlannedQty = 0;
+        } else {
+            if (recommended > sapPlanned) {
+                stockStatus = "Need Planned Order"; statusClass = "status-need-planned";
+                needPlannedQty = recommended - sapPlanned;
+            } else if (totalEffectiveStock <= 0) {
+                stockStatus = "Out of Stock"; statusClass = "status-out"; needPlannedQty = 0;
+            } else if (totalEffectiveStock < avgSale) {
+                stockStatus = "Low Stock"; statusClass = "status-low"; needPlannedQty = 0;
+            } else {
+                stockStatus = "Sufficient"; statusClass = "status-sufficient"; needPlannedQty = 0;
+            }
+        }
+    }
+
+    recommended = Math.round(recommended);
+    needPlannedQty = Math.round(needPlannedQty);
+
+    let planBatchNeed = 0;
+    if (needPlannedQty > 0 && batchSize > 0) {
+        planBatchNeed = parseFloat((needPlannedQty / batchSize).toFixed(2));
+    }
+    let finalRemark = hasProductRemark ? cleanRemark : '-';
+    return { recommended, needPlannedQty, planBatchNeed, stockStatus, statusClass, finalRemark };
+}
+
+function updateTableFilterDropdowns() {
+    const filterPlant = document.getElementById('filterPlant');
+    const filterStatus = document.getElementById('filterStatus');
+    const selectedPlant = filterPlant.value;
+    const selectedStatus = filterStatus.value;
+
+    filterPlant.innerHTML = '<option value="ALL">All Plants</option>';
+    filterStatus.innerHTML = '<option value="ALL">All Status</option>';
+
+    let plants = new Set(), statuses = new Set();
+    generatedReportRows.forEach(r => {
+        if (r.plantName && r.plantName !== '-') plants.add(r.plantName);
+        if (r.stockStatus && r.stockStatus !== '-') statuses.add(r.stockStatus);
+    });
+
+    Array.from(plants).sort().forEach(p => filterPlant.innerHTML += `<option value="${p}">${p}</option>`);
+    Array.from(statuses).sort().forEach(st => filterStatus.innerHTML += `<option value="${st}">${st}</option>`);
+
+    if (Array.from(filterPlant.options).some(o => o.value === selectedPlant)) filterPlant.value = selectedPlant;
+    if (Array.from(filterStatus.options).some(o => o.value === selectedStatus)) filterStatus.value = selectedStatus;
+}
+
+function resetAllFilters() {
+    document.getElementById('filterCode').value = '';
+    document.getElementById('filterDesc').value = '';
+    document.getElementById('filterPlant').value = 'ALL';
+    document.getElementById('filterStatus').value = 'ALL';
+    renderTable();
+}
+
+function processMultipleSAPData(fileContentsArray) {
+    let rawParsedRows = [];
+    let uniqueMaterialsSet = new Set();
+    let stockMergeMap = {};
+    let codeMappingRules = {}; 
+    let pureAvgSaleStore = {}; 
+
+    fileContentsArray.forEach(rawData => {
+        const lines = rawData.trim().split('\n');
+        if (lines.length === 0) return;
+        const isTab = lines[0].includes('\t');
+        let firstLine = parseCSVOrTabLine(lines[0], isTab);
+
+        let oldIdx = -1, newIdx = -1;
+        firstLine.forEach((header, index) => {
+            let hText = header.toLowerCase().trim().replace(/["']/g, "");
+            if (hText.includes("old material") || hText === "old code") oldIdx = index;
+            if (hText.includes("new material") || hText === "new code") newIdx = index;
+        });
+
+        if (oldIdx !== -1 && newIdx !== -1) {
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                let cols = parseCSVOrTabLine(lines[i], isTab);
+                let oldCode = cleanValue(cols[oldIdx]);
+                let newCode = cleanValue(cols[newIdx]);
+                if (oldCode && newCode) codeMappingRules[oldCode] = newCode;
+            }
+        }
+    });
+
+    fileContentsArray.forEach(rawData => {
+        const lines = rawData.trim().split('\n');
+        if (lines.length === 0) return;
+        const isTab = lines[0].includes('\t');
+        let firstLine = parseCSVOrTabLine(lines[0], isTab);
+
+        let codeIdx = -1, descIdx = -1, plantNameIdx = -1, batchSizeIdx = -1, avgSaleIdx = -1, dateIdx = -1, qtyIdx = -1;
+        let batchIdx = -1, mfgQtyIdx = -1, mfgDateIdx = -1, plantIdx = -1, whIdx = -1, procIdx = -1;
+        let testIdx = -1, sapPlannedIdx = -1, remarkIdx = -1;
+
+        firstLine.forEach((header, index) => {
+            let hText = header.toLowerCase().trim().replace(/["']/g, "");
+            if (hText.includes("material code") || hText === "material" || hText === "code") codeIdx = index;
+            else if (hText.includes("description") || hText.includes("material desc")) descIdx = index;
+            else if (hText === "plant" || hText.includes("plant name")) plantNameIdx = index;
+            else if (hText.includes("batch size") || hText.includes("std batch")) batchSizeIdx = index;
+            else if (hText.includes("avg sale") || hText.includes("average sale")) avgSaleIdx = index;
+            else if (hText.includes("planned order date")) dateIdx = index;
+            else if (hText.includes("planned order qty")) qtyIdx = index;
+            else if (hText.includes("last manufacture batch") || hText.includes("batch")) batchIdx = index;
+            else if (hText.includes("last manufactured qty") || hText.includes("mfg qty")) mfgQtyIdx = index;
+            else if (hText.includes("last manufactured date") || hText.includes("mfg date")) mfgDateIdx = index;
+            else if (hText.includes("plant stock")) plantIdx = index;
+            else if (hText.includes("total wh stock") || hText.includes("wh stock")) whIdx = index;
+            else if (hText.includes("process order") || hText === "process") procIdx = index;
+            else if (hText.includes("under test") || hText === "test") testIdx = index;
+            else if (hText.includes("sap planned") || hText.includes("planned")) sapPlannedIdx = index;
+            else if (hText.includes("remark") || hText.includes("product remark")) remarkIdx = index;
+        });
+
+        if (codeIdx === -1) return;
+
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            let cols = parseCSVOrTabLine(lines[i], isTab);
+            if (cols.length < 1) continue;
+
+            let code = codeIdx !== -1 ? cleanValue(cols[codeIdx]) : '';
+            if (!code) continue;
+
+            const desc = descIdx !== -1 && cols[descIdx] ? cleanValue(cols[descIdx]) : '';
+            const plantName = plantNameIdx !== -1 && cols[plantNameIdx] ? cleanValue(cols[plantNameIdx]) : '';
+            const batchSize = batchSizeIdx !== -1 && cols[batchSizeIdx] ? Math.round(parseSmartNumber(cols[batchSizeIdx])) : 0;
+            const avgSale = avgSaleIdx !== -1 && cols[avgSaleIdx] ? Math.round(parseSmartNumber(cols[avgSaleIdx])) : 0;
+            const plannedDate = dateIdx !== -1 && cols[dateIdx] ? cleanValue(cols[dateIdx]) : '';
+            const plannedQty = qtyIdx !== -1 && cols[qtyIdx] ? Math.round(parseSmartNumber(cols[qtyIdx])) : 0;
+            const mfgBatch = batchIdx !== -1 && cols[batchIdx] ? cleanValue(cols[batchIdx]) : '';
+            const mfgQty = mfgQtyIdx !== -1 && cols[mfgQtyIdx] ? Math.round(parseSmartNumber(cols[mfgQtyIdx])) : 0;
+            const mfgDate = mfgDateIdx !== -1 && cols[mfgDateIdx] ? cleanValue(cols[mfgDateIdx]) : '';
+            const plantStock = plantIdx !== -1 && cols[plantIdx] ? Math.round(parseSmartNumber(cols[plantIdx])) : 0;
+            const whStock = whIdx !== -1 && cols[whIdx] ? Math.round(parseSmartNumber(cols[whIdx])) : 0;
+            const processOrder = procIdx !== -1 && cols[procIdx] ? Math.round(parseSmartNumber(cols[procIdx])) : 0;
+            const underTest = testIdx !== -1 && cols[testIdx] ? Math.round(parseSmartNumber(cols[testIdx])) : 0;
+            const sapPlanned = sapPlannedIdx !== -1 && cols[sapPlannedIdx] ? Math.round(parseSmartNumber(cols[sapPlannedIdx])) : 0;
+            let remark = remarkIdx !== -1 && cols[remarkIdx] ? cleanValue(cols[remarkIdx]) : '';
+
+            uniqueMaterialsSet.add(code);
+
+            if (!stockMergeMap[code]) {
+                stockMergeMap[code] = {
+                    desc: desc || code, plantStock: 0, whStock: 0, processOrder: 0, underTest: 0, sapPlanned: 0,
+                    mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: '-', batchSize: 0, remark: '', merged: false
+                };
+            }
+            
+            if (desc) stockMergeMap[code].desc = desc;
+            if (batchSize > 0) stockMergeMap[code].batchSize = batchSize;
+            if (plantStock) stockMergeMap[code].plantStock += plantStock;
+            if (whStock) stockMergeMap[code].whStock += whStock;
+            if (processOrder) stockMergeMap[code].processOrder += processOrder;
+            if (underTest) stockMergeMap[code].underTest += underTest;
+            if (sapPlanned) stockMergeMap[code].sapPlanned += sapPlanned;
+            
+            if (avgSale > 0 && (!pureAvgSaleStore[code] || avgSaleIdx !== -1)) {
+                pureAvgSaleStore[code] = avgSale;
+            }
+            
+            if (mfgDate || mfgBatch) {
+                const currentTimestamp = parseDateVal(mfgDate);
+                if (currentTimestamp > stockMergeMap[code].mfgDateTimestamp || stockMergeMap[code].mfgDateTimestamp === 0) {
+                    stockMergeMap[code].mfgDateTimestamp = currentTimestamp;
+                    if (mfgBatch) stockMergeMap[code].mfgBatch = mfgBatch;
+                    if (mfgQty > 0) stockMergeMap[code].mfgQty = mfgQty;
+                    if (mfgDate) stockMergeMap[code].mfgDate = mfgDate;
+                }
+            }
+
+            if (plantName) stockMergeMap[code].plantName = plantName;
+            if (remark && remark !== '0' && remark !== '-') stockMergeMap[code].remark = remark;
+
+            if (plannedDate || plannedQty > 0) {
+                rawParsedRows.push({ code, desc, date: plannedDate || 'N/A', qty: plannedQty });
+            }
+        }
+    });
+
+    Object.keys(stockMergeMap).forEach(c => { stockMergeMap[c].avgSale = pureAvgSaleStore[c] || 0; });
+
+    Object.keys(codeMappingRules).forEach(oldCode => {
+        const newCode = codeMappingRules[oldCode];
+        if (stockMergeMap[oldCode] && !stockMergeMap[oldCode].merged) {
+            if (!stockMergeMap[newCode]) {
+                stockMergeMap[newCode] = {
+                    desc: stockMergeMap[oldCode].desc, plantStock: 0, whStock: 0, processOrder: 0, underTest: 0, sapPlanned: 0,
+                    mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: stockMergeMap[oldCode].plantName, batchSize: stockMergeMap[oldCode].batchSize, remark: '', merged: false
+                };
+                uniqueMaterialsSet.add(newCode);
+            }
+            if (!stockMergeMap[newCode].batchSize && stockMergeMap[oldCode].batchSize) {
+                stockMergeMap[newCode].batchSize = stockMergeMap[oldCode].batchSize;
+            }
+            stockMergeMap[newCode].plantStock += stockMergeMap[oldCode].plantStock;
+            stockMergeMap[newCode].whStock += stockMergeMap[oldCode].whStock;
+            stockMergeMap[newCode].processOrder += stockMergeMap[oldCode].processOrder;
+            stockMergeMap[newCode].underTest += stockMergeMap[oldCode].underTest;
+            
+            const oldSaleVal = pureAvgSaleStore[oldCode] || 0;
+            const newSaleVal = pureAvgSaleStore[newCode] || 0;
+            stockMergeMap[newCode].avgSale = oldSaleVal + newSaleVal;
+
+            let mergeNote = `Stock & Sale merged from old code: ${oldCode}`;
+            stockMergeMap[newCode].remark = stockMergeMap[newCode].remark ? `${stockMergeMap[newCode].remark} | ${mergeNote}` : mergeNote;
+
+            stockMergeMap[oldCode].plantStock = 0;
+            stockMergeMap[oldCode].whStock = 0;
+            stockMergeMap[oldCode].processOrder = 0;
+            stockMergeMap[oldCode].underTest = 0;
+            stockMergeMap[oldCode].avgSale = 0; 
+            stockMergeMap[oldCode].sapPlanned = 0; 
+            stockMergeMap[oldCode].remark = `Replaced by new code: ${newCode}`;
+            stockMergeMap[oldCode].merged = true;
+        }
+    });
+
+    uniqueMaterialsSet.forEach(code => {
+        const hasPlannedRow = rawParsedRows.some(r => r.code === code);
+        if (!hasPlannedRow) { rawParsedRows.push({ code, desc: stockMergeMap[code].desc, date: 'N/A', qty: 0 }); }
+    });
+
+    rawParsedRows.sort((a, b) => a.code.localeCompare(b.code));
+    generatedReportRows = [];
+
     rawParsedRows.forEach((row) => {
         const mergedStock = stockMergeMap[row.code];
         row.desc = mergedStock.desc;
@@ -336,11 +1166,8 @@
     updateLastModifiedTimeDisplay(currentTimestampISO);
     updateTableFilterDropdowns();
     renderTable();
+}
 
-
-// ==========================================
-// PART 2: UI TABLE RENDERING & FILTERING
-// ==========================================
 function renderTable() {
     const tableBody = document.getElementById('tableBody');
     tableBody.innerHTML = '';
@@ -440,10 +1267,6 @@ function renderTable() {
     });
 }
 
-
-// ==========================================
-// PART 3: EXCEL EXPORT FUNCTIONALITY
-// ==========================================
 function exportProcessedData() {
     if (generatedReportRows.length === 0) {
         alert("Upload Files, phir export kijiye!");
@@ -592,4 +1415,4 @@ function exportProcessedData() {
 }
 </script>
 </body>
-</html>
+</h
