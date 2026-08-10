@@ -14,8 +14,6 @@
             --text-main: #1E293B;
             --text-muted: #64748B;
             --border-color: #CBD5E1;
-            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-hover: 0 10px 25px -5px rgba(37, 99, 235, 0.1), 0 8px 10px -6px rgba(37, 99, 235, 0.1);
         }
 
         * {
@@ -31,19 +29,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
         }
 
         .dashboard-container {
@@ -51,46 +36,30 @@
             margin: 0 auto;
             padding: 24px;
             width: 100%;
-            animation: fadeIn 0.6s ease-out forwards;
         }
 
-        /* Header Styles */
         .header-card {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: #FFFFFF;
             padding: 24px 32px;
             border-radius: 16px;
-            box-shadow: var(--shadow-subtle);
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .header-card:hover {
-            box-shadow: 0 12px 30px -10px rgba(15, 23, 42, 0.3);
         }
 
         .header-title h1 {
-            font-size: 22pt;
+            font-size: 20pt;
             font-weight: 800;
-            letter-spacing: -0.5px;
             margin-bottom: 4px;
         }
 
         .header-title p {
-            font-size: 10.5pt;
+            font-size: 10pt;
             color: #93C5FD;
-            font-weight: 500;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        /* Buttons with Advanced Hover Effects */
         .btn {
             background: var(--accent-blue);
             color: #FFFFFF;
@@ -100,46 +69,21 @@
             font-size: 10pt;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
-        }
-
-        .btn:hover {
-            background: #1D4ED8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
         }
 
         .btn-success {
             background: #059669;
-            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
         }
 
-        .btn-success:hover {
-            background: #047857;
-            box-shadow: 0 6px 12px rgba(5, 150, 105, 0.3);
-        }
-
-        /* Filter Section */
         .filters-card {
             background: var(--card-bg);
             padding: 18px 24px;
             border-radius: 12px;
-            box-shadow: var(--shadow-subtle);
             margin-bottom: 20px;
             display: flex;
             gap: 16px;
             align-items: center;
             flex-wrap: wrap;
-            transition: all 0.3s ease;
-        }
-
-        .filters-card:hover {
-            box-shadow: var(--shadow-hover);
         }
 
         .filter-group {
@@ -155,7 +99,6 @@
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .filter-group input, .filter-group select {
@@ -163,76 +106,43 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 9.5pt;
-            transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
             background: #F8FAFC;
         }
 
-        .filter-group input:focus, .filter-group select:focus {
-            border-color: var(--accent-blue);
-            background: #FFFFFF;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-
-        /* Table Container with Sticky Headings & Smooth Scroll */
         .table-card {
             background: var(--card-bg);
             border-radius: 14px;
-            box-shadow: var(--shadow-subtle);
             overflow: hidden;
             border: 1px solid var(--border-color);
-            transition: box-shadow 0.3s ease;
         }
 
-        .table-card:hover {
-            box-shadow: var(--shadow-hover);
-        }
-
+        /* Yahan table container ko height aur scrollable banaya hai */
         .table-container {
             max-height: 72vh;
             overflow-y: auto;
             position: relative;
-            scroll-behavior: smooth;
-        }
-
-        /* Custom Scrollbar */
-        .table-container::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #F1F5F9;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
-            border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: #94A3B8;
         }
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             text-align: left;
             white-space: nowrap;
         }
 
-        /* Sticky Headings Implemented Here */
+        /* Yeh heading ko freeze (sticky) rakhega scroll karte waqt */
         th {
-            background-color: var(--primary);
-            color: #FFFFFF;
+            background-color: var(--primary) !important;
+            color: #FFFFFF !important;
             font-size: 9pt;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             padding: 14px 12px;
             position: sticky;
             top: 0;
-            z-index: 30;
+            z-index: 50;
             border-bottom: 2px solid #334155;
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.2);
         }
 
         td {
@@ -240,31 +150,12 @@
             padding: 10px 12px;
             border-bottom: 1px solid #E2E8F0;
             border-right: 1px solid #F1F5F9;
-            transition: background-color 0.15s ease;
         }
 
-        /* Row Hover & Animation Effects */
-        .data-row {
-            animation: fadeIn 0.4s ease forwards;
-        }
+        .group-even { background-color: #FFFFFF; }
+        .group-odd { background-color: #F8FAFC; }
+        .group-start td { border-top: 2px solid #CBD5E1; }
 
-        .data-row:hover td {
-            background-color: #EEF2FF !important;
-        }
-
-        .group-even {
-            background-color: #FFFFFF;
-        }
-
-        .group-odd {
-            background-color: #F8FAFC;
-        }
-
-        .group-start td {
-            border-top: 2px solid #CBD5E1;
-        }
-
-        /* Badges & Enhancements */
         .mat-code {
             background-color: #EFF6FF;
             color: var(--accent-blue);
@@ -281,7 +172,6 @@
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 4px;
-            display: inline-block;
         }
 
         .badge-test {
@@ -343,7 +233,6 @@
 <body>
 
     <div class="dashboard-container">
-        <!-- Header Section -->
         <div class="header-card">
             <div class="header-title">
                 <h1>PSYCHOTROPICS INDIA LIMITED</h1>
@@ -354,7 +243,6 @@
             </div>
         </div>
 
-        <!-- Filter Section -->
         <div class="filters-card">
             <div class="filter-group">
                 <label for="filterCode">Material Code</label>
@@ -378,7 +266,7 @@
             </div>
         </div>
 
-        <!-- Table Display Container with Sticky Header -->
+        <!-- Table Container wrapper added for freeze heading support -->
         <div class="table-card">
             <div class="table-container">
                 <table>
@@ -415,86 +303,11 @@
     </div>
 
 <script>
-// Mock data and arrays framework setup
-let generatedReportRows = [];
-let stockMergeMap = {};
-
-function updateLastModifiedTimeDisplay(isoString) {
-    console.log("Last modified updated: ", isoString);
-}
-
-function updateTableFilterDropdowns() {
-    const plantSelect = document.getElementById('filterPlant');
-    const statusSelect = document.getElementById('filterStatus');
-    
-    // Extract unique plants & statuses dynamically from generatedReportRows
-    const plants = [...new Set(generatedReportRows.map(r => r.plantName))].filter(Boolean);
-    const statuses = [...new Set(generatedReportRows.map(r => r.stockStatus))].filter(s => s && s !== '-');
-
-    plantSelect.innerHTML = '<option value="ALL">All Plants</option>';
-    plants.forEach(p => {
-        plantSelect.innerHTML += `<option value="${p}">${p}</option>`;
-    });
-
-    statusSelect.innerHTML = '<option value="ALL">All Statuses</option>';
-    statuses.forEach(s => {
-        statusSelect.innerHTML += `<option value="${s}">${s}</option>`;
-    });
-}
-
-function calculateMetrics(code, remark, avgSale, plantStock, whStock, processOrder, sapPlanned, underTest, batchSize) {
-    // Basic calculation framework runner
-    const totalStock = plantStock + whStock + processOrder + sapPlanned + underTest;
-    const recommended = Math.max(0, (avgSale * 3) - totalStock);
-    const needPlannedQty = Math.max(0, recommended - sapPlanned);
-    const planBatchNeed = batchSize > 0 ? needPlannedQty / batchSize : 0;
-    
-    let stockStatus = "Sufficient Stock";
-    let statusClass = "status-sufficient";
-
-    if (totalStock <= 0) {
-        stockStatus = "Out of Stock";
-        statusClass = "status-out";
-    } else if (totalStock < avgSale) {
-        stockStatus = "Low Stock";
-        statusClass = "status-low";
-    } else if (needPlannedQty > 0) {
-        stockStatus = "Need Planned Order";
-        statusClass = "status-need-planned";
-    }
-
-    return {
-        recommended,
-        needPlannedQty,
-        planBatchNeed,
-        stockStatus,
-        statusClass,
-        finalRemark: remark || '-'
-    };
-}
-
 // ==========================================
 // PART 1: DATA PROCESSING & MAPPING LOGIC
 // ==========================================
-function processRawDataRows(rawParsedRows) {
-    generatedReportRows = [];
     rawParsedRows.forEach((row) => {
-        const mergedStock = stockMergeMap[row.code] || {
-            desc: row.desc || 'Unknown Material',
-            plantName: row.plantName || 'Plant A',
-            batchSize: row.batchSize || 1000,
-            avgSale: row.avgSale || 500,
-            mfgBatch: row.mfgBatch || 'BATCH001',
-            mfgQty: row.mfgQty || 1000,
-            mfgDate: row.mfgDate || '2026-01-01',
-            plantStock: row.plantStock || 200,
-            whStock: row.whStock || 500,
-            processOrder: row.processOrder || 0,
-            underTest: row.underTest || 0,
-            sapPlanned: row.sapPlanned || 0,
-            remark: row.remark || '-'
-        };
-
+        const mergedStock = stockMergeMap[row.code];
         row.desc = mergedStock.desc;
         row.plantName = mergedStock.plantName;
         row.batchSize = Math.round(mergedStock.batchSize);
@@ -523,7 +336,6 @@ function processRawDataRows(rawParsedRows) {
     updateLastModifiedTimeDisplay(currentTimestampISO);
     updateTableFilterDropdowns();
     renderTable();
-}
 
 
 // ==========================================
@@ -601,8 +413,8 @@ function renderTable() {
                 <td rowspan="${spanCount}">${row.plantName}</td>
                 <td rowspan="${spanCount}">${displayBatchSize}</td>
                 <td rowspan="${spanCount}">${displayAvgSale}</td>
-                <td style="color:var(--accent-blue); font-weight:700;">${row.date || '2026-06-01'}</td>
-                <td><span class="badge-qty">${Math.round(row.qty || 500).toLocaleString('en-US')}</span></td>
+                <td style="color:var(--accent-blue); font-weight:700;">${row.date}</td>
+                <td><span class="badge-qty">${Math.round(row.qty).toLocaleString('en-US')}</span></td>
                 <td rowspan="${spanCount}" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 700;">${row.mfgBatch}</td>
                 <td rowspan="${spanCount}">${displayMfgQty}</td>
                 <td rowspan="${spanCount}" style="color:var(--text-muted);">${row.mfgDate}</td>
@@ -619,8 +431,8 @@ function renderTable() {
             `;
         } else {
             htmlString += `
-                <td style="color:var(--accent-blue); font-weight:700;">${row.date || '2026-06-01'}</td>
-                <td><span class="badge-qty">${Math.round(row.qty || 500).toLocaleString('en-US')}</span></td>
+                <td style="color:var(--accent-blue); font-weight:700;">${row.date}</td>
+                <td><span class="badge-qty">${Math.round(row.qty).toLocaleString('en-US')}</span></td>
             `;
         }
         tr.innerHTML = htmlString;
@@ -738,8 +550,8 @@ function exportProcessedData() {
                 <td rowspan="${spanCount}" class="text-center">${row.plantName}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.batchSize > 0 ? row.batchSize.toLocaleString('en-US') : '-'}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.avgSale.toLocaleString('en-US')}</td>
-                <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date || '2026-06-01'}</td>
-                <td class="qty-badge">${(row.qty || 500).toLocaleString('en-US')}</td>
+                <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date}</td>
+                <td class="qty-badge">${row.qty.toLocaleString('en-US')}</td>
                 <td rowspan="${spanCount}" class="text-center" style="font-family:'Courier New', monospace; font-weight:bold; color:#334155;">${row.mfgBatch}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.mfgQty.toLocaleString('en-US')}</td>
                 <td rowspan="${spanCount}" class="text-center" style="color:#64748b;">${row.mfgDate}</td>
@@ -756,8 +568,8 @@ function exportProcessedData() {
             `;
         } else {
             excelHTML += `
-                <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date || '2026-06-01'}</td>
-                <td class="qty-badge">${(row.qty || 500).toLocaleString('en-US')}</td>
+                <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date}</td>
+                <td class="qty-badge">${row.qty.toLocaleString('en-US')}</td>
             `;
         }
         excelHTML += `</tr>`;
