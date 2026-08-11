@@ -212,7 +212,6 @@
     .drop-zone:hover { border-color: var(--accent-blue); transform: scale(1.002); }
     .drop-zone.dragover { background: rgba(30, 58, 138, 0.05); border-color: var(--accent-blue); }
 
-    /* STICKY / FROZEN TABLE HEADERS */
     .table-responsive {
         background: var(--bg-card);
         border-radius: 12px;
@@ -238,7 +237,6 @@
         white-space: nowrap;
     }
 
-    /* Freezing Header row 1 */
     thead tr:nth-child(1) th {
         position: sticky;
         top: 0;
@@ -248,12 +246,11 @@
         box-shadow: 0 2px 2px rgba(0,0,0,0.1);
     }
 
-    /* Freezing Header filter row 2 */
     thead tr:nth-child(2) th,
     thead tr.filter-row th,
     .filter-row {
         position: sticky;
-        top: 43px; /* height of row 1 approx */
+        top: 43px;
         z-index: 19;
         background-color: var(--bg-card);
         box-shadow: 0 2px 2px rgba(0,0,0,0.08);
@@ -502,7 +499,6 @@
     window.signInAuth = signInWithEmailAndPassword;
     window.signOutAuth = signOut;
 
-    // Unique session ID for single-device restriction per user
     const currentBrowserSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
     window.currentBrowserSessionId = currentBrowserSessionId;
     let sessionListenerUnsubscribe = null;
@@ -514,10 +510,8 @@
             const userRef = ref(database, `ppic_users/${emailKey}`);
             
             try {
-                // Single Session Control: Register current session ID in Firebase
                 await set(child(userRef, 'activeSessionId'), currentBrowserSessionId);
 
-                // Listen for session overwrite (another device logged in)
                 if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
                 sessionListenerUnsubscribe = onValue(child(userRef, 'activeSessionId'), (snapshot) => {
                     const activeSession = snapshot.val();
@@ -567,7 +561,7 @@ let generatedReportRows = [];
 let cachedFileContents = [];
 let isRegisterMode = false;
 let inactivityTimer = null;
-const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Minutes
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
 
 function initInactivityTimer() {
     resetInactivityTimer();
@@ -1060,15 +1054,17 @@ function processMultipleSAPData(fileContentsArray) {
             }
             
             if (desc) stockMergeMap[code].desc = desc;
-            if (batchSize > 0) stockMergeMap[code].batchSize = batchSize;
-            if (plantStock) stockMergeMap[code].plantStock += plantStock;
-            if (whStock) stockMergeMap[code].whStock += whStock;
-            if (processOrder) stockMergeMap[code].processOrder += processOrder;
-            if (underTest) stockMergeMap[code].underTest += underTest;
-            if (sapPlanned) stockMergeMap[code].sapPlanned += sapPlanned;
+            if (batchSize > 0) stockMergeMap[code].batchSize = Math.max(stockMergeMap[code].batchSize, batchSize);
             
-            if (avgSale > 0 && (!pureAvgSaleStore[code] || avgSaleIdx !== -1)) {
-                pureAvgSaleStore[code] = avgSale;
+            // FIXED: Using Math.max instead of += to prevent value multiplication across repeated rows
+            if (plantStock > 0) stockMergeMap[code].plantStock = Math.max(stockMergeMap[code].plantStock, plantStock);
+            if (whStock > 0) stockMergeMap[code].whStock = Math.max(stockMergeMap[code].whStock, whStock);
+            if (processOrder > 0) stockMergeMap[code].processOrder = Math.max(stockMergeMap[code].processOrder, processOrder);
+            if (underTest > 0) stockMergeMap[code].underTest = Math.max(stockMergeMap[code].underTest, underTest);
+            if (sapPlanned > 0) stockMergeMap[code].sapPlanned = Math.max(stockMergeMap[code].sapPlanned, sapPlanned);
+            
+            if (avgSale > 0) {
+                pureAvgSaleStore[code] = Math.max(pureAvgSaleStore[code] || 0, avgSale);
             }
             
             if (mfgDate || mfgBatch) {
@@ -1415,4 +1411,4 @@ function exportProcessedData() {
 }
 </script>
 </body>
-</h
+</html>
