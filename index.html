@@ -1000,22 +1000,37 @@ function processMultipleSAPData(fileContentsArray) {
 
         firstLine.forEach((header, index) => {
             let hText = header.toLowerCase().trim().replace(/["']/g, "");
-            if (hText.includes("material code") || hText === "material" || hText === "code") codeIdx = index;
-            else if (hText.includes("description") || hText.includes("material desc")) descIdx = index;
-            else if (hText === "plant" || hText.includes("plant name")) plantNameIdx = index;
-            else if (hText.includes("batch size") || hText.includes("std batch")) batchSizeIdx = index;
-            else if (hText.includes("avg sale") || hText.includes("average sale")) avgSaleIdx = index;
-            else if (hText.includes("planned order date")) dateIdx = index;
-            else if (hText.includes("planned order qty")) qtyIdx = index;
-            else if (hText.includes("last manufacture batch") || hText.includes("batch")) batchIdx = index;
-            else if (hText.includes("last manufactured qty") || hText.includes("mfg qty")) mfgQtyIdx = index;
-            else if (hText.includes("last manufactured date") || hText.includes("mfg date")) mfgDateIdx = index;
-            else if (hText.includes("plant stock")) plantIdx = index;
-            else if (hText.includes("total wh stock") || hText.includes("wh stock")) whIdx = index;
-            else if (hText.includes("process order") || hText === "process") procIdx = index;
-            else if (hText.includes("under test") || hText === "test") testIdx = index;
-            else if (hText.includes("sap planned") || hText.includes("planned")) sapPlannedIdx = index;
-            else if (hText.includes("remark") || hText.includes("product remark")) remarkIdx = index;
+            
+            if ((hText.includes("material") && hText.includes("code")) || hText === "material" || hText === "code") {
+                if (codeIdx === -1) codeIdx = index;
+            }
+            else if (hText.includes("description") || hText.includes("material desc") || hText === "desc") descIdx = index;
+            else if (hText === "plant" || hText === "plant name" || hText === "plant_name") plantNameIdx = index;
+            else if (hText.includes("batch size") || hText.includes("std batch") || hText.includes("standard batch")) batchSizeIdx = index;
+            else if (hText.includes("avg sale") || hText.includes("average sale") || hText.includes("avg_sale")) avgSaleIdx = index;
+            else if (hText.includes("planned order date") || hText === "order date" || hText === "planned date") dateIdx = index;
+            else if (hText.includes("planned order qty") || hText === "planned qty" || (hText.includes("qty") && !hText.includes("mfg") && !hText.includes("process") && !hText.includes("planned"))) {
+                if (qtyIdx === -1) qtyIdx = index;
+            }
+            // --- ROBUST MATCHING FOR MFG BATCH, QTY & DATE ---
+            else if (hText.includes("batch") || hText.includes("mfg batch") || hText.includes("last batch")) {
+                if (batchIdx === -1) batchIdx = index;
+            }
+            else if (hText.includes("mfg qty") || hText.includes("manufactured qty") || hText.includes("mfg quantity") || hText.includes("production qty") || (hText.includes("qty") && (hText.includes("mfg") || hText.includes("manufactur")))) {
+                if (mfgQtyIdx === -1) mfgQtyIdx = index;
+            }
+            else if (hText.includes("mfg date") || hText.includes("manufactured date") || hText.includes("manufacturing date") || hText.includes("production date") || hText.includes("batch date") || hText.includes("last date") || (hText.includes("date") && (hText.includes("mfg") || hText.includes("manufactur") || hText.includes("prod") || hText.includes("batch")))) {
+                if (mfgDateIdx === -1) mfgDateIdx = index;
+            }
+            // ------------------------------------------------
+            else if (hText.includes("plant stock") || hText.includes("unrestricted") || hText.includes("plant_stock") || hText === "stock") plantIdx = index;
+            else if (hText.includes("wh stock") || hText.includes("total wh") || hText.includes("warehouse") || hText.includes("wh_stock")) whIdx = index;
+            else if (hText.includes("process order") || hText.includes("process orders") || hText === "process" || hText === "proc order" || hText.includes("proc. order") || hText.includes("process ord")) procIdx = index;
+            else if (hText.includes("under test") || hText.includes("inspection") || hText === "test" || hText.includes("qc") || hText.includes("quality")) testIdx = index;
+            else if (hText.includes("sap planned") || hText.includes("planned order") || (hText.includes("planned") && !hText.includes("date") && !hText.includes("qty") && !hText.includes("process"))) {
+                sapPlannedIdx = index;
+            }
+            else if (hText.includes("remark") || hText.includes("product remark") || hText.includes("remarks")) remarkIdx = index;
         });
 
         if (codeIdx === -1) return;
@@ -1056,7 +1071,6 @@ function processMultipleSAPData(fileContentsArray) {
             if (desc) stockMergeMap[code].desc = desc;
             if (batchSize > 0) stockMergeMap[code].batchSize = Math.max(stockMergeMap[code].batchSize, batchSize);
             
-            // FIXED: Using Math.max instead of += to prevent value multiplication across repeated rows
             if (plantStock > 0) stockMergeMap[code].plantStock = Math.max(stockMergeMap[code].plantStock, plantStock);
             if (whStock > 0) stockMergeMap[code].whStock = Math.max(stockMergeMap[code].whStock, whStock);
             if (processOrder > 0) stockMergeMap[code].processOrder = Math.max(stockMergeMap[code].processOrder, processOrder);
@@ -1069,7 +1083,7 @@ function processMultipleSAPData(fileContentsArray) {
             
             if (mfgDate || mfgBatch) {
                 const currentTimestamp = parseDateVal(mfgDate);
-                if (currentTimestamp > stockMergeMap[code].mfgDateTimestamp || stockMergeMap[code].mfgDateTimestamp === 0) {
+                if (currentTimestamp >= stockMergeMap[code].mfgDateTimestamp || stockMergeMap[code].mfgDateTimestamp === 0) {
                     stockMergeMap[code].mfgDateTimestamp = currentTimestamp;
                     if (mfgBatch) stockMergeMap[code].mfgBatch = mfgBatch;
                     if (mfgQty > 0) stockMergeMap[code].mfgQty = mfgQty;
@@ -1377,38 +1391,4 @@ function exportProcessedData() {
                 <td rowspan="${spanCount}" class="num-cell" style="font-weight:bold; color:#0f172a;">${row.plantStock.toLocaleString('en-US')}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.whStock.toLocaleString('en-US')}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.processOrder.toLocaleString('en-US')}</td>
-                <td rowspan="${spanCount}" class="${row.underTest > 0 ? 'test-badge' : 'num-cell'}">${row.underTest.toLocaleString('en-US')}</td>
-                <td rowspan="${spanCount}" class="num-cell">${row.sapPlanned.toLocaleString('en-US')}</td>
-                <td rowspan="${spanCount}" class="rec-cell">${row.recommended.toLocaleString('en-US')}</td>
-                <td rowspan="${spanCount}" class="${row.needPlannedQty > 0 ? 'need-planned-cell' : 'num-cell'}">${row.needPlannedQty.toLocaleString('en-US')}</td>
-                <td rowspan="${spanCount}" class="${row.planBatchNeed > 0 ? 'batch-need-cell' : 'num-cell'}">${formattedBatchNeed}</td>
-                <td rowspan="${spanCount}" class="${statusExcelClass}">${row.stockStatus}</td>
-                <td rowspan="${spanCount}" class="${remarkStyleClass}">${row.remark}</td>
-            `;
-        } else {
-            excelHTML += `
-                <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date}</td>
-                <td class="qty-badge">${row.qty.toLocaleString('en-US')}</td>
-            `;
-        }
-        excelHTML += `</tr>`;
-    });
-
-    excelHTML += `
-            </tbody>
-        </table>
-    </body>
-    </html>
-    `;
-
-    const blob = new Blob([excelHTML], { type: "application/vnd.ms-excel;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `PPIC_Executive_Report_${new Date().toISOString().slice(0,10)}.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-</script>
-</body>
-</html>
+                <td rowspan="${
