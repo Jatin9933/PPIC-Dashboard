@@ -1,666 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PPIC - Unified Material Control Matrix (Executive Edition)</title>
-<style>
-    :root {
-        --bg-main: #f8fafc;
-        --bg-card: #ffffff;
-        --text-main: #0f172a;
-        --text-muted: #64748b;
-        --border-color: #cbd5e1;
-        --accent-blue: #1e3a8a;
-        --accent-hover: #1e40af;
-        --table-header-bg: #1e3a8a;
-        --table-header-color: #ffffff;
-        --group-even: #ffffff;
-        --group-odd: #f8fafc;
-        --modal-overlay: rgba(15, 23, 42, 0.65);
-        --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
-        --shadow-lg: 0 20px 40px rgba(0,0,0,0.15);
-    }
-
-    [data-theme="dark"] {
-        --bg-main: #0b0f19;
-        --bg-card: #1e293b;
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
-        --border-color: #334155;
-        --accent-blue: #38bdf8;
-        --accent-hover: #7dd3fc;
-        --table-header-bg: #020617;
-        --table-header-color: #f8fafc;
-        --group-even: #1e293b;
-        --group-odd: #0f172a;
-        --modal-overlay: rgba(0, 0, 0, 0.85);
-        --shadow-sm: 0 4px 12px rgba(0,0,0,0.3);
-        --shadow-lg: 0 20px 40px rgba(0,0,0,0.5);
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulseGlow {
-        0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-    }
-
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        margin: 0;
-        padding: 20px;
-        transition: background 0.3s ease, color 0.3s ease;
-        animation: fadeIn 0.4s ease-out;
-    }
-
-    .container {
-        max-width: 100%;
-        margin: 0 auto;
-    }
-
-    #authOverlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--modal-overlay);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        backdrop-filter: blur(6px);
-        animation: fadeIn 0.3s ease;
-    }
-    .auth-card {
-        background: var(--bg-card);
-        padding: 35px;
-        border-radius: 14px;
-        width: 420px;
-        max-width: 90%;
-        box-shadow: var(--shadow-lg);
-        border: 1px solid var(--border-color);
-        text-align: center;
-        animation: fadeIn 0.4s ease-out;
-    }
-    .auth-card h2 { margin-top: 0; color: var(--text-main); font-size: 24px; font-weight: 700; }
-    .auth-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
-    .form-group { margin-bottom: 18px; text-align: left; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
-    .form-group input {
-        width: 100%; padding: 11px 14px; border: 1px solid var(--border-color);
-        border-radius: 8px; background: var(--bg-main); color: var(--text-main); font-size: 14px;
-        box-sizing: border-box; transition: all 0.2s;
-    }
-    .form-group input:focus {
-        border-color: var(--accent-blue);
-        outline: none;
-        animation: pulseGlow 1.5s infinite;
-    }
-    .auth-btn {
-        width: 100%; padding: 12px; background: var(--accent-blue); color: #ffffff; border: none;
-        border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
-        margin-top: 10px;
-    }
-    .auth-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    .auth-toggle { margin-top: 18px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
-    .auth-toggle span { color: var(--accent-blue); font-weight: 600; text-decoration: underline; }
-
-    .header-panel {
-        background: var(--bg-card);
-        padding: 22px 28px;
-        border-radius: 12px;
-        box-shadow: var(--shadow-sm);
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        border: 1px solid var(--border-color);
-        transition: transform 0.2s;
-    }
-
-    .title-section h1 {
-        margin: 0;
-        font-size: 23px;
-        color: var(--text-main);
-        font-weight: 700;
-        letter-spacing: 0.3px;
-    }
-
-    .title-section p {
-        margin: 4px 0 0 0;
-        font-size: 13px;
-        color: var(--text-muted);
-    }
-
-    .user-session-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        color: #059669;
-        background: rgba(5, 150, 105, 0.08);
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: 1px solid rgba(5, 150, 105, 0.2);
-    }
-
-    .last-update-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--accent-blue);
-        background: rgba(30, 58, 138, 0.08);
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: 1px solid rgba(30, 58, 138, 0.2);
-        margin-left: 8px;
-    }
-
-    .controls-section {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        padding: 9px 15px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 13px;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .btn:hover { opacity: 0.95; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    .btn:active { transform: translateY(0); }
-    .btn-primary { background: #1e3a8a; color: #ffffff; }
-    .btn-success { background: #059669; color: #ffffff; }
-    .btn-warning { background: #d97706; color: #ffffff; }
-    .btn-secondary { background: #475569; color: #ffffff; }
-    .btn-info { background: #0284c7; color: #ffffff; }
-    .btn-danger { background: #dc2626; color: #ffffff; }
-
-    .drop-zone {
-        border: 2px dashed var(--border-color);
-        padding: 24px;
-        text-align: center;
-        border-radius: 12px;
-        background: var(--bg-card);
-        cursor: pointer;
-        margin-bottom: 20px;
-        transition: all 0.2s ease;
-        box-shadow: var(--shadow-sm);
-    }
-    .drop-zone:hover { border-color: var(--accent-blue); transform: scale(1.002); }
-    .drop-zone.dragover { background: rgba(30, 58, 138, 0.05); border-color: var(--accent-blue); }
-
-    .table-responsive {
-        background: var(--bg-card);
-        border-radius: 12px;
-        box-shadow: var(--shadow-sm);
-        max-height: 75vh;
-        overflow-y: auto;
-        overflow-x: auto;
-        border: 1px solid var(--border-color);
-        position: relative;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        text-align: left;
-        font-size: 13px;
-    }
-
-    th, td {
-        padding: 12px 14px;
-        border-bottom: 1px solid var(--border-color);
-        white-space: nowrap;
-    }
-
-    thead tr:nth-child(1) th {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        background-color: var(--table-header-bg);
-        color: var(--table-header-color);
-        box-shadow: 0 2px 2px rgba(0,0,0,0.1);
-    }
-
-    thead tr:nth-child(2) th,
-    thead tr.filter-row th,
-    .filter-row {
-        position: sticky;
-        top: 43px;
-        z-index: 19;
-        background-color: var(--bg-card);
-        box-shadow: 0 2px 2px rgba(0,0,0,0.08);
-    }
-
-    th {
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 11px;
-        letter-spacing: 0.5px;
-    }
-
-    .group-even { background-color: var(--group-even); }
-    .group-odd { background-color: var(--group-odd); }
-    .group-start { border-top: 2px solid var(--border-color); }
-    .data-row { transition: background-color 0.15s ease; }
-    .data-row:hover { background-color: rgba(30, 58, 138, 0.04); }
-
-    .status-badge {
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 11px;
-        display: inline-block;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    .status-sufficient { background: #d1fae5; color: #065f46; }
-    .status-low { background: #fef3c7; color: #92400e; }
-    .status-out { background: #fee2e2; color: #991b1b; }
-    .status-to-order { background: #e0e7ff; color: #3730a3; }
-    .status-need-planned { background: #fce7f3; color: #9d174d; }
-    .status-none { color: var(--text-muted); }
-
-    .badge-qty { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-    .badge-test { background: #ffedd5; color: #c2410c; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-    .badge-need-planned { background: #fdf2f8; color: #be185d; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-    .badge-batch-need { background: #eef2ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-    .badge-remark { background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-    .mat-code { font-family: monospace; font-weight: 700; color: var(--accent-blue); }
-    .no-data-msg { text-align: center; padding: 50px; color: var(--text-muted); }
-
-    .filter-row td input, .filter-row td select {
-        width: 100%;
-        padding: 7px 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        background: var(--bg-card);
-        color: var(--text-main);
-        font-size: 12px;
-        box-sizing: border-box;
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 10000;
-        left: 0; top: 0; width: 100%; height: 100%;
-        background-color: var(--modal-overlay);
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(4px);
-        animation: fadeIn 0.2s ease;
-    }
-    .modal-content {
-        background: var(--bg-card);
-        padding: 30px;
-        border-radius: 14px;
-        width: 480px;
-        max-width: 90%;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-lg);
-        animation: fadeIn 0.3s ease-out;
-    }
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-    .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
-    .close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
-    .close-btn:hover { color: var(--text-main); }
-    .template-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-</style>
-</head>
-<body>
-
-<div id="authOverlay">
-    <div class="auth-card" id="authCardBox">
-        <h2 id="authCardTitle">PPIC Office Portal</h2>
-        <p id="authCardSub">Secure Authentication & Live Multi-User Matrix</p>
-        
-        <div class="form-group">
-            <label>Corporate Email ID</label>
-            <input type="email" id="authEmail" placeholder="employee@company.com">
-        </div>
-        <div class="form-group">
-            <label>Secure Password</label>
-            <input type="password" id="authPassword" placeholder="••••••••">
-        </div>
-        
-        <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthAction()">Sign In to Dashboard</button>
-        
-        <div class="auth-toggle" id="authToggleMode" onclick="toggleAuthMode()">
-            Don't have an account? <span>Register New ID</span>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="header-panel">
-        <div class="title-section">
-            <h1>PPIC - Unified Material Control Matrix</h1>
-            <p>Dynamic Reorder Analytics & Production Planning Automation</p>
-            <div>
-                <span id="userSessionBadge" class="user-session-badge">👤 <span id="loggedInUserText">Guest</span></span>
-                <span id="lastUpdateIndicator" class="last-update-badge">
-                    🕒 Last Updated: <span id="lastUpdateTimeText">Not Loaded Yet</span>
-                </span>
-            </div>
-        </div>
-        <div class="controls-section">
-            <button class="btn btn-info" onclick="openTemplateModal()">📥 Templates</button>
-            <input type="date" id="firebaseDatePicker" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
-            <button class="btn btn-primary" onclick="fetchReportByDate()">📅 Fetch Date</button>
-            <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save Cloud</button>
-            <button class="btn btn-warning" onclick="reloadUploadedFiles()">🔄 Refresh</button>
-            <button class="btn btn-primary" onclick="exportProcessedData()">📊 Export</button>
-            <button class="btn btn-danger" onclick="logoutUser()" style="padding: 9px 12px;" title="Logout">🚪</button>
-            <select id="themeSelect" onchange="changeTheme(this.value)" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
-                <option value="default">Light Theme</option>
-                <option value="dark">Dark Theme</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileUpload()">
-        <div id="uploadLabel">
-            <span style="font-weight: 600; color: var(--accent-blue);">📁 Click to Upload SAP Files / Templates</span> or Drag & Drop multiple data files here
-        </div>
-    </div>
-
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Material Code</th>
-                    <th>Material Description</th>
-                    <th>Plant</th>
-                    <th>Batch Size</th>
-                    <th>Avg Sale</th>
-                    <th>Planned Order Date</th>
-                    <th>Planned Order Qty</th>
-                    <th>Last Mfg Batch</th>
-                    <th>Last Mfg Qty</th>
-                    <th>Last Mfg Date</th>
-                    <th>Plant Stock</th>
-                    <th>Total WH Stock</th>
-                    <th>Process Order</th>
-                    <th>Under Test</th>
-                    <th>SAP Planned</th>
-                    <th>Recommended</th>
-                    <th>Need Planned Order Qty</th>
-                    <th>Plan Batch Need</th>
-                    <th>Stock Status</th>
-                    <th>Product Remark</th>
-                </tr>
-                <tr class="filter-row">
-                    <td><input type="text" id="filterCode" placeholder="Filter Code..." onkeyup="renderTable()"></td>
-                    <td><input type="text" id="filterDesc" placeholder="Filter Desc..." onkeyup="renderTable()"></td>
-                    <td>
-                        <select id="filterPlant" onchange="renderTable()">
-                            <option value="ALL">All Plants</option>
-                        </select>
-                    </td>
-                    <td colspan="2"></td>
-                    <td colspan="2"></td>
-                    <td colspan="3"></td>
-                    <td colspan="5"></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>
-                        <select id="filterStatus" onchange="renderTable()">
-                            <option value="ALL">All Status</option>
-                        </select>
-                    </td>
-                    <td><button class="btn btn-secondary" style="font-size:10px; padding:6px 8px; width:100%;" onclick="resetAllFilters()">Reset</button></td>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr>
-                    <td colspan="20" class="no-data-msg">
-                        📊 No SAP files loaded into memory. Upload your data sources to visualize the analytics matrix.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div id="templateModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>📥 Download SAP / Data Templates</h3>
-            <button class="close-btn" onclick="closeTemplateModal()">&times;</button>
-        </div>
-        <p style="font-size: 13px; color: var(--text-muted); margin-top: 0;">In templates mein data fill karke aap direct yahan upload kar sakte hain:</p>
-        <div class="template-list">
-            <button class="btn btn-primary" onclick="downloadTemplate('stock')">📄 1. Stock & Material Master Template</button>
-            <button class="btn btn-primary" onclick="downloadTemplate('planned')">📄 2. Planned Orders Template</button>
-            <button class="btn btn-primary" onclick="downloadTemplate('mfg')">📄 3. Manufacturing History Template</button>
-            <button class="btn btn-primary" onclick="downloadTemplate('mapping')">📄 4. Old to New Code Mapping Template</button>
-        </div>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAcF5pIIc_daPi2gEgNW1YFMkVBviyFdHI",
-        authDomain: "ppic-dashboard-f5f95.firebaseapp.com",
-        databaseURL: "https://ppic-dashboard-f5f95-default-rtdb.firebaseio.com",
-        projectId: "ppic-dashboard-f5f95",
-        storageBucket: "ppic-dashboard-f5f95.appspot.com",
-        messagingSenderId: "856882762391",
-        appId: "1:856882762391:web:f13cda673aca7439fb8fd2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const auth = getAuth(app);
-
-    window.firebaseDb = database;
-    window.firebaseAuth = auth;
-    window.dbRef = ref;
-    window.dbSet = set;
-    window.dbGet = get;
-    window.dbChild = child;
-    window.dbOnValue = onValue;
-    window.createUserAuth = createUserWithEmailAndPassword;
-    window.signInAuth = signInWithEmailAndPassword;
-    window.signOutAuth = signOut;
-
-    const currentBrowserSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    window.currentBrowserSessionId = currentBrowserSessionId;
-    let sessionListenerUnsubscribe = null;
-
-    onAuthStateChanged(auth, async (user) => {
-        const overlay = document.getElementById('authOverlay');
-        if (user) {
-            const emailKey = user.email.replace(/[.#$\/\[\]]/g, "_");
-            const userRef = ref(database, `ppic_users/${emailKey}`);
-            
-            try {
-                await set(child(userRef, 'activeSessionId'), currentBrowserSessionId);
-
-                if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
-                sessionListenerUnsubscribe = onValue(child(userRef, 'activeSessionId'), (snapshot) => {
-                    const activeSession = snapshot.val();
-                    if (activeSession && activeSession !== window.currentBrowserSessionId) {
-                        alert("⚠️ Your account was signed in from another device or browser session. You have been logged out.");
-                        signOut(auth).then(() => { location.reload(); });
-                    }
-                });
-
-                const snapshot = await get(userRef);
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    if (userData.status === "approved" || user.email === "ppic@pilindia.in") {
-                        overlay.style.display = 'none';
-                        document.getElementById('loggedInUserText').innerText = user.email;
-                        loadFromFirebase();
-                        initInactivityTimer();
-                    } else {
-                        overlay.style.display = 'flex';
-                        document.getElementById('authCardBox').innerHTML = `
-                            <h2>⏳ Pending Authorization</h2>
-                            <p>Your ID (${user.email}) is awaiting Admin approval. Please contact the administrator to authorize your login access.</p>
-                            <button class="auth-btn" onclick="logoutUser()">Sign Out / Back</button>
-                        `;
-                    }
-                } else {
-                    await set(userRef, { email: user.email, status: "pending", createdAt: new Date().toISOString(), activeSessionId: currentBrowserSessionId });
-                    overlay.style.display = 'flex';
-                    document.getElementById('authCardBox').innerHTML = `
-                        <h2>⏳ Verification Required</h2>
-                        <p>Registration successful for <strong>${user.email}</strong>! First-time login requires administrator authorization before dashboard access is granted.</p>
-                        <button class="auth-btn" onclick="logoutUser()">Back to Login</button>
-                    `;
-                }
-            } catch (err) {
-                console.error("Auth check error:", err);
-            }
-        } else {
-            overlay.style.display = 'flex';
-            if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
-        }
-    });
-</script>
-
-<script>
-let generatedReportRows = [];
-let cachedFileContents = [];
-let isRegisterMode = false;
-let inactivityTimer = null;
-const INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
-
-function initInactivityTimer() {
-    resetInactivityTimer();
-    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
-        window.addEventListener(eventName, resetInactivityTimer, { passive: true });
-    });
-}
-
-function resetInactivityTimer() {
-    clearTimeout(inactivityTimer);
-    if (!window.firebaseAuth.currentUser) return;
-    inactivityTimer = setTimeout(() => {
-        alert("🔒 You have been automatically logged out due to 30 minutes of inactivity.");
-        logoutUser();
-    }, INACTIVITY_LIMIT_MS);
-}
-
-function toggleAuthMode() {
-    isRegisterMode = !isRegisterMode;
-    const title = document.getElementById('authCardTitle');
-    const sub = document.getElementById('authCardSub');
-    const btn = document.getElementById('authSubmitBtn');
-    const toggle = document.getElementById('authToggleMode');
-
-    if (isRegisterMode) {
-        title.innerText = "Register New Account";
-        sub.innerText = "Create credentials for office access verification";
-        btn.innerText = "Register & Request Access";
-        toggle.innerHTML = `Already have an account? <span>Sign In</span>`;
-    } else {
-        title.innerText = "PPIC Office Portal";
-        sub.innerText = "Secure Authentication & Live Multi-User Matrix";
-        btn.innerText = "Sign In to Dashboard";
-        toggle.innerHTML = `Don't have an account? <span>Register New ID</span>`;
-    }
-}
-
-async function handleAuthAction() {
-    const email = document.getElementById('authEmail').value.trim();
-    const pass = document.getElementById('authPassword').value.trim();
-
-    if (!email || !pass) {
-        alert("⚠️ Please enter both Email and Password!");
-        return;
-    }
-
-    try {
-        if (isRegisterMode) {
-            await window.createUserAuth(window.firebaseAuth, email, pass);
-            alert("✅ Registration complete! Your account is pending admin verification.");
-        } else {
-            await window.signInAuth(window.firebaseAuth, email, pass);
-        }
-    } catch (error) {
-        alert("❌ Authentication Error: " + error.message);
-    }
-}
-
-function logoutUser() {
-    window.signOutAuth(window.firebaseAuth).then(() => {
-        location.reload();
-    });
-}
-
-function openTemplateModal() { document.getElementById('templateModal').style.display = 'flex'; }
-function closeTemplateModal() { document.getElementById('templateModal').style.display = 'none'; }
-
-function downloadTemplate(type) {
-    let headers = [];
-    let sampleData = [];
-    let filename = '';
-
-    if (type === 'stock') {
-        filename = 'Stock_Master_Template.csv';
-        headers = ['Material Code', 'Material Description', 'Plant', 'Batch Size', 'Avg Sale', 'Plant Stock', 'Total WH Stock', 'Process Order', 'Under Test', 'SAP Planned', 'Product Remark'];
-        sampleData = ['RM1001', 'Sample Material A', 'Plant 1', '1000', '500', '2000', '1500', '500', '200', '1000', '-'];
-    } else if (type === 'planned') {
-        filename = 'Planned_Orders_Template.csv';
-        headers = ['Material Code', 'Planned Order Date', 'Planned Order Qty'];
-        sampleData = ['RM1001', '2026-06-30', '1000'];
-    } else if (type === 'mfg') {
-        filename = 'Mfg_History_Template.csv';
-        headers = ['Material Code', 'Last Manufacture Batch', 'Last Manufactured Qty', 'Last Manufactured Date'];
-        sampleData = ['RM1001', 'BATCH001', '1000', '2026-05-15'];
-    } else if (type === 'mapping') {
-        filename = 'Code_Mapping_Template.csv';
-        headers = ['Old Material Code', 'New Material Code'];
-        sampleData = ['OLD999', 'RM1001'];
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + sampleData.join(",");
-    let encodedUri = encodeURI(csvContent);
-    let link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    closeTemplateModal();
 }
 
 function updateLastModifiedTimeDisplay(isoString) {
@@ -1000,37 +337,22 @@ function processMultipleSAPData(fileContentsArray) {
 
         firstLine.forEach((header, index) => {
             let hText = header.toLowerCase().trim().replace(/["']/g, "");
-            
-            if ((hText.includes("material") && hText.includes("code")) || hText === "material" || hText === "code") {
-                if (codeIdx === -1) codeIdx = index;
-            }
-            else if (hText.includes("description") || hText.includes("material desc") || hText === "desc") descIdx = index;
-            else if (hText === "plant" || hText === "plant name" || hText === "plant_name") plantNameIdx = index;
-            else if (hText.includes("batch size") || hText.includes("std batch") || hText.includes("standard batch")) batchSizeIdx = index;
-            else if (hText.includes("avg sale") || hText.includes("average sale") || hText.includes("avg_sale")) avgSaleIdx = index;
-            else if (hText.includes("planned order date") || hText === "order date" || hText === "planned date") dateIdx = index;
-            else if (hText.includes("planned order qty") || hText === "planned qty" || (hText.includes("qty") && !hText.includes("mfg") && !hText.includes("process") && !hText.includes("planned"))) {
-                if (qtyIdx === -1) qtyIdx = index;
-            }
-            // --- ROBUST MATCHING FOR MFG BATCH, QTY & DATE ---
-            else if (hText.includes("batch") || hText.includes("mfg batch") || hText.includes("last batch")) {
-                if (batchIdx === -1) batchIdx = index;
-            }
-            else if (hText.includes("mfg qty") || hText.includes("manufactured qty") || hText.includes("mfg quantity") || hText.includes("production qty") || (hText.includes("qty") && (hText.includes("mfg") || hText.includes("manufactur")))) {
-                if (mfgQtyIdx === -1) mfgQtyIdx = index;
-            }
-            else if (hText.includes("mfg date") || hText.includes("manufactured date") || hText.includes("manufacturing date") || hText.includes("production date") || hText.includes("batch date") || hText.includes("last date") || (hText.includes("date") && (hText.includes("mfg") || hText.includes("manufactur") || hText.includes("prod") || hText.includes("batch")))) {
-                if (mfgDateIdx === -1) mfgDateIdx = index;
-            }
-            // ------------------------------------------------
-            else if (hText.includes("plant stock") || hText.includes("unrestricted") || hText.includes("plant_stock") || hText === "stock") plantIdx = index;
-            else if (hText.includes("wh stock") || hText.includes("total wh") || hText.includes("warehouse") || hText.includes("wh_stock")) whIdx = index;
-            else if (hText.includes("process order") || hText.includes("process orders") || hText === "process" || hText === "proc order" || hText.includes("proc. order") || hText.includes("process ord")) procIdx = index;
-            else if (hText.includes("under test") || hText.includes("inspection") || hText === "test" || hText.includes("qc") || hText.includes("quality")) testIdx = index;
-            else if (hText.includes("sap planned") || hText.includes("planned order") || (hText.includes("planned") && !hText.includes("date") && !hText.includes("qty") && !hText.includes("process"))) {
-                sapPlannedIdx = index;
-            }
-            else if (hText.includes("remark") || hText.includes("product remark") || hText.includes("remarks")) remarkIdx = index;
+            if (hText.includes("material code") || hText === "material" || hText === "code") codeIdx = index;
+            else if (hText.includes("description") || hText.includes("material desc")) descIdx = index;
+            else if (hText === "plant" || hText.includes("plant name")) plantNameIdx = index;
+            else if (hText.includes("batch size") || hText.includes("std batch")) batchSizeIdx = index;
+            else if (hText.includes("avg sale") || hText.includes("average sale")) avgSaleIdx = index;
+            else if (hText.includes("planned order date")) dateIdx = index;
+            else if (hText.includes("planned order qty")) qtyIdx = index;
+            else if (hText.includes("last manufacture batch") || hText.includes("batch")) batchIdx = index;
+            else if (hText.includes("last manufactured qty") || hText.includes("mfg qty")) mfgQtyIdx = index;
+            else if (hText.includes("last manufactured date") || hText.includes("mfg date")) mfgDateIdx = index;
+            else if (hText.includes("plant stock")) plantIdx = index;
+            else if (hText.includes("total wh stock") || hText.includes("wh stock")) whIdx = index;
+            else if (hText.includes("process order") || hText === "process") procIdx = index;
+            else if (hText.includes("under test") || hText === "test") testIdx = index;
+            else if (hText.includes("sap planned") || hText.includes("planned")) sapPlannedIdx = index;
+            else if (hText.includes("remark") || hText.includes("product remark")) remarkIdx = index;
         });
 
         if (codeIdx === -1) return;
@@ -1069,21 +391,20 @@ function processMultipleSAPData(fileContentsArray) {
             }
             
             if (desc) stockMergeMap[code].desc = desc;
-            if (batchSize > 0) stockMergeMap[code].batchSize = Math.max(stockMergeMap[code].batchSize, batchSize);
+            if (batchSize > 0) stockMergeMap[code].batchSize = batchSize;
+            if (plantStock) stockMergeMap[code].plantStock += plantStock;
+            if (whStock) stockMergeMap[code].whStock += whStock;
+            if (processOrder) stockMergeMap[code].processOrder += processOrder;
+            if (underTest) stockMergeMap[code].underTest += underTest;
+            if (sapPlanned) stockMergeMap[code].sapPlanned += sapPlanned;
             
-            if (plantStock > 0) stockMergeMap[code].plantStock = Math.max(stockMergeMap[code].plantStock, plantStock);
-            if (whStock > 0) stockMergeMap[code].whStock = Math.max(stockMergeMap[code].whStock, whStock);
-            if (processOrder > 0) stockMergeMap[code].processOrder = Math.max(stockMergeMap[code].processOrder, processOrder);
-            if (underTest > 0) stockMergeMap[code].underTest = Math.max(stockMergeMap[code].underTest, underTest);
-            if (sapPlanned > 0) stockMergeMap[code].sapPlanned = Math.max(stockMergeMap[code].sapPlanned, sapPlanned);
-            
-            if (avgSale > 0) {
-                pureAvgSaleStore[code] = Math.max(pureAvgSaleStore[code] || 0, avgSale);
+            if (avgSale > 0 && (!pureAvgSaleStore[code] || avgSaleIdx !== -1)) {
+                pureAvgSaleStore[code] = avgSale;
             }
             
             if (mfgDate || mfgBatch) {
                 const currentTimestamp = parseDateVal(mfgDate);
-                if (currentTimestamp >= stockMergeMap[code].mfgDateTimestamp || stockMergeMap[code].mfgDateTimestamp === 0) {
+                if (currentTimestamp > stockMergeMap[code].mfgDateTimestamp || stockMergeMap[code].mfgDateTimestamp === 0) {
                     stockMergeMap[code].mfgDateTimestamp = currentTimestamp;
                     if (mfgBatch) stockMergeMap[code].mfgBatch = mfgBatch;
                     if (mfgQty > 0) stockMergeMap[code].mfgQty = mfgQty;
@@ -1391,4 +712,38 @@ function exportProcessedData() {
                 <td rowspan="${spanCount}" class="num-cell" style="font-weight:bold; color:#0f172a;">${row.plantStock.toLocaleString('en-US')}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.whStock.toLocaleString('en-US')}</td>
                 <td rowspan="${spanCount}" class="num-cell">${row.processOrder.toLocaleString('en-US')}</td>
-                <td rowspan="${
+                <td rowspan="${spanCount}" class="${row.underTest > 0 ? 'test-badge' : 'num-cell'}">${row.underTest.toLocaleString('en-US')}</td>
+                <td rowspan="${spanCount}" class="num-cell">${row.sapPlanned.toLocaleString('en-US')}</td>
+                <td rowspan="${spanCount}" class="rec-cell">${row.recommended.toLocaleString('en-US')}</td>
+                <td rowspan="${spanCount}" class="${row.needPlannedQty > 0 ? 'need-planned-cell' : 'num-cell'}">${row.needPlannedQty.toLocaleString('en-US')}</td>
+                <td rowspan="${spanCount}" class="${row.planBatchNeed > 0 ? 'batch-need-cell' : 'num-cell'}">${formattedBatchNeed}</td>
+                <td rowspan="${spanCount}" class="${statusExcelClass}">${row.stockStatus}</td>
+                <td rowspan="${spanCount}" class="${remarkStyleClass}">${row.remark}</td>
+            `;
+        } else {
+            excelHTML += `
+                <td class="text-center" style="color:#2563eb; font-weight:bold;">${row.date}</td>
+                <td class="qty-badge">${row.qty.toLocaleString('en-US')}</td>
+            `;
+        }
+        excelHTML += `</tr>`;
+    });
+
+    excelHTML += `
+            </tbody>
+        </table>
+    </body>
+    </html>
+    `;
+
+    const blob = new Blob([excelHTML], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `PPIC_Executive_Report_${new Date().toISOString().slice(0,10)}.xls`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+</body>
+</h
