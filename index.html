@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="PPIC Unified Material Control Matrix — internal production planning and reorder analytics dashboard.">
+<meta name="robots" content="noindex, nofollow">
 <title>PPIC - Unified Material Control Matrix (Executive Edition)</title>
 <style>
     :root {
@@ -48,6 +50,10 @@
         0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
         70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
         100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 
     body {
@@ -105,10 +111,18 @@
         width: 100%; padding: 12px; background: var(--accent-blue); color: #ffffff; border: none;
         border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
         margin-top: 10px;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .auth-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     .auth-toggle { margin-top: 18px; font-size: 12px; color: var(--text-muted); cursor: pointer; }
     .auth-toggle span { color: var(--accent-blue); font-weight: 600; text-decoration: underline; }
+    .auth-error { color: #dc2626; font-size: 12px; font-weight: 600; margin-top: -8px; margin-bottom: 14px; text-align: left; display: none; }
+    .spinner {
+        width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4);
+        border-top-color: #ffffff; border-radius: 50%; animation: spin 0.6s linear infinite;
+        display: none;
+    }
 
     .header-panel {
         background: var(--bg-card);
@@ -191,6 +205,7 @@
 
     .btn:hover { opacity: 0.95; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .btn-primary { background: #1e3a8a; color: #ffffff; }
     .btn-success { background: #059669; color: #ffffff; }
     .btn-warning { background: #d97706; color: #ffffff; }
@@ -344,19 +359,24 @@
 <div id="authOverlay">
     <div class="auth-card" id="authCardBox">
         <h2 id="authCardTitle">PPIC Office Portal</h2>
-        <p id="authCardSub">Secure Authentication & Live Multi-User Matrix</p>
-        
+        <p id="authCardSub">Secure Authentication &amp; Live Multi-User Matrix</p>
+
         <div class="form-group">
             <label>Corporate Email ID</label>
-            <input type="email" id="authEmail" placeholder="employee@company.com">
+            <input type="email" id="authEmail" placeholder="employee@company.com" autocomplete="username">
         </div>
         <div class="form-group">
             <label>Secure Password</label>
-            <input type="password" id="authPassword" placeholder="••••••••">
+            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
         </div>
-        
-        <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthAction()">Sign In to Dashboard</button>
-        
+
+        <div class="auth-error" id="authErrorText"></div>
+
+        <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthAction()">
+            <span class="spinner" id="authSpinner"></span>
+            <span id="authSubmitLabel">Sign In to Dashboard</span>
+        </button>
+
         <div class="auth-toggle" id="authToggleMode" onclick="toggleAuthMode()">
             Don't have an account? <span>Register New ID</span>
         </div>
@@ -367,7 +387,7 @@
     <div class="header-panel">
         <div class="title-section">
             <h1>PPIC - Unified Material Control Matrix</h1>
-            <p>Dynamic Reorder Analytics & Production Planning Automation</p>
+            <p>Dynamic Reorder Analytics &amp; Production Planning Automation</p>
             <div>
                 <span id="userSessionBadge" class="user-session-badge">👤 <span id="loggedInUserText">Guest</span></span>
                 <span id="lastUpdateIndicator" class="last-update-badge">
@@ -393,7 +413,7 @@
     <div class="drop-zone" id="dropZone">
         <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileUpload()">
         <div id="uploadLabel">
-            <span style="font-weight: 600; color: var(--accent-blue);">📁 Click to Upload SAP Files / Templates</span> or Drag & Drop multiple data files here
+            <span style="font-weight: 600; color: var(--accent-blue);">📁 Click to Upload SAP Files / Templates</span> or Drag &amp; Drop multiple data files here
         </div>
     </div>
 
@@ -464,7 +484,7 @@
         </div>
         <p style="font-size: 13px; color: var(--text-muted); margin-top: 0;">In templates mein data fill karke aap direct yahan upload kar sakte hain:</p>
         <div class="template-list">
-            <button class="btn btn-primary" onclick="downloadTemplate('stock')">📄 1. Stock & Material Master Template</button>
+            <button class="btn btn-primary" onclick="downloadTemplate('stock')">📄 1. Stock &amp; Material Master Template</button>
             <button class="btn btn-primary" onclick="downloadTemplate('planned')">📄 2. Planned Orders Template</button>
             <button class="btn btn-primary" onclick="downloadTemplate('mfg')">📄 3. Manufacturing History Template</button>
             <button class="btn btn-primary" onclick="downloadTemplate('mapping')">📄 4. Old to New Code Mapping Template</button>
@@ -474,7 +494,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, get, child, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -498,9 +518,18 @@
     window.dbGet = get;
     window.dbChild = child;
     window.dbOnValue = onValue;
+    window.dbRemove = remove;
     window.createUserAuth = createUserWithEmailAndPassword;
     window.signInAuth = signInWithEmailAndPassword;
     window.signOutAuth = signOut;
+
+    // Only these two accounts are permitted into the dashboard.
+    // Keep this list in sync with the Realtime Database rules.
+    const ALLOWED_UIDS = [
+        "N9lGgP94VgRdSNDVDXdwndnBsss2",
+        "KsOpGczRQJUQdUYfh4lrBpvYZmr2"
+    ];
+    window.ALLOWED_UIDS = ALLOWED_UIDS;
 
     // Unique session ID for single-device restriction per user
     const currentBrowserSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -509,55 +538,50 @@
 
     onAuthStateChanged(auth, async (user) => {
         const overlay = document.getElementById('authOverlay');
-        if (user) {
-            const emailKey = user.email.replace(/[.#$\/\[\]]/g, "_");
-            const userRef = ref(database, `ppic_users/${emailKey}`);
-            
-            try {
-                // Single Session Control: Register current session ID in Firebase
-                await set(child(userRef, 'activeSessionId'), currentBrowserSessionId);
 
-                // Listen for session overwrite (another device logged in)
-                if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
-                sessionListenerUnsubscribe = onValue(child(userRef, 'activeSessionId'), (snapshot) => {
-                    const activeSession = snapshot.val();
-                    if (activeSession && activeSession !== window.currentBrowserSessionId) {
-                        alert("⚠️ Your account was signed in from another device or browser session. You have been logged out.");
-                        signOut(auth).then(() => { location.reload(); });
-                    }
-                });
-
-                const snapshot = await get(userRef);
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    if (userData.status === "approved" || user.email === "ppic@pilindia.in") {
-                        overlay.style.display = 'none';
-                        document.getElementById('loggedInUserText').innerText = user.email;
-                        loadFromFirebase();
-                        initInactivityTimer();
-                    } else {
-                        overlay.style.display = 'flex';
-                        document.getElementById('authCardBox').innerHTML = `
-                            <h2>⏳ Pending Authorization</h2>
-                            <p>Your ID (${user.email}) is awaiting Admin approval. Please contact the administrator to authorize your login access.</p>
-                            <button class="auth-btn" onclick="logoutUser()">Sign Out / Back</button>
-                        `;
-                    }
-                } else {
-                    await set(userRef, { email: user.email, status: "pending", createdAt: new Date().toISOString(), activeSessionId: currentBrowserSessionId });
-                    overlay.style.display = 'flex';
-                    document.getElementById('authCardBox').innerHTML = `
-                        <h2>⏳ Verification Required</h2>
-                        <p>Registration successful for <strong>${user.email}</strong>! First-time login requires administrator authorization before dashboard access is granted.</p>
-                        <button class="auth-btn" onclick="logoutUser()">Back to Login</button>
-                    `;
-                }
-            } catch (err) {
-                console.error("Auth check error:", err);
-            }
-        } else {
+        if (!user) {
             overlay.style.display = 'flex';
+            if (sessionListenerUnsubscribe) { sessionListenerUnsubscribe(); sessionListenerUnsubscribe = null; }
+            resetAuthSubmitState();
+            return;
+        }
+
+        if (!ALLOWED_UIDS.includes(user.uid)) {
+            // Not an authorized account — deny locally and sign out.
+            // Database rules independently block any read/write for this UID too.
+            document.getElementById('authCardBox').innerHTML = `
+                <h2>🚫 Access Denied</h2>
+                <p>The account <strong>${user.email}</strong> is not authorized for the PPIC dashboard.
+                Contact the administrator if you believe this is a mistake.</p>
+                <button class="auth-btn" onclick="logoutUser()">Back to Sign In</button>
+            `;
+            overlay.style.display = 'flex';
+            await signOut(auth);
+            return;
+        }
+
+        // Authorized user
+        try {
+            const sessionRef = child(ref(database, `ppic_sessions/${user.uid}`), 'activeSessionId');
+
+            await set(sessionRef, currentBrowserSessionId);
+
             if (sessionListenerUnsubscribe) sessionListenerUnsubscribe();
+            sessionListenerUnsubscribe = onValue(sessionRef, (snapshot) => {
+                const activeSession = snapshot.val();
+                if (activeSession && activeSession !== window.currentBrowserSessionId) {
+                    alert("⚠️ Your account was signed in from another device or browser session. You have been logged out.");
+                    signOut(auth).then(() => { location.reload(); });
+                }
+            });
+
+            overlay.style.display = 'none';
+            document.getElementById('loggedInUserText').innerText = user.email;
+            loadFromFirebase();
+            initInactivityTimer();
+        } catch (err) {
+            console.error("Session init error:", err);
+            showAuthError("Signed in, but could not initialize your session. Please refresh.");
         }
     });
 </script>
@@ -589,42 +613,95 @@ function toggleAuthMode() {
     isRegisterMode = !isRegisterMode;
     const title = document.getElementById('authCardTitle');
     const sub = document.getElementById('authCardSub');
-    const btn = document.getElementById('authSubmitBtn');
+    const label = document.getElementById('authSubmitLabel');
     const toggle = document.getElementById('authToggleMode');
+
+    hideAuthError();
 
     if (isRegisterMode) {
         title.innerText = "Register New Account";
         sub.innerText = "Create credentials for office access verification";
-        btn.innerText = "Register & Request Access";
+        label.innerText = "Register & Request Access";
         toggle.innerHTML = `Already have an account? <span>Sign In</span>`;
     } else {
         title.innerText = "PPIC Office Portal";
         sub.innerText = "Secure Authentication & Live Multi-User Matrix";
-        btn.innerText = "Sign In to Dashboard";
+        label.innerText = "Sign In to Dashboard";
         toggle.innerHTML = `Don't have an account? <span>Register New ID</span>`;
     }
 }
 
+function showAuthError(message) {
+    const el = document.getElementById('authErrorText');
+    el.innerText = message;
+    el.style.display = 'block';
+}
+
+function hideAuthError() {
+    const el = document.getElementById('authErrorText');
+    el.style.display = 'none';
+    el.innerText = '';
+}
+
+function setAuthSubmitBusy(isBusy) {
+    document.getElementById('authSubmitBtn').disabled = isBusy;
+    document.getElementById('authSpinner').style.display = isBusy ? 'inline-block' : 'none';
+}
+
+function resetAuthSubmitState() {
+    setAuthSubmitBusy(false);
+    hideAuthError();
+}
+
 async function handleAuthAction() {
+    hideAuthError();
     const email = document.getElementById('authEmail').value.trim();
     const pass = document.getElementById('authPassword').value.trim();
 
     if (!email || !pass) {
-        alert("⚠️ Please enter both Email and Password!");
+        showAuthError("Please enter both Email and Password.");
         return;
     }
 
+    setAuthSubmitBusy(true);
     try {
         if (isRegisterMode) {
             await window.createUserAuth(window.firebaseAuth, email, pass);
-            alert("✅ Registration complete! Your account is pending admin verification.");
+            // onAuthStateChanged will immediately evaluate the UID against the allow-list.
         } else {
             await window.signInAuth(window.firebaseAuth, email, pass);
         }
     } catch (error) {
-        alert("❌ Authentication Error: " + error.message);
+        showAuthError(friendlyAuthError(error));
+        setAuthSubmitBusy(false);
     }
 }
+
+function friendlyAuthError(error) {
+    const code = error && error.code ? error.code : '';
+    switch (code) {
+        case 'auth/invalid-email': return 'That email address looks invalid.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential': return 'Incorrect email or password.';
+        case 'auth/email-already-in-use': return 'An account with this email already exists — try signing in instead.';
+        case 'auth/weak-password': return 'Password should be at least 6 characters.';
+        case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment and try again.';
+        default: return (error && error.message) ? error.message.replace('Firebase: ', '') : 'Authentication failed.';
+    }
+}
+
+// Allow pressing Enter in either field to submit the form
+document.addEventListener('DOMContentLoaded', () => {
+    ['authEmail', 'authPassword'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); handleAuthAction(); }
+            });
+        }
+    });
+});
 
 function logoutUser() {
     window.signOutAuth(window.firebaseAuth).then(() => {
@@ -706,11 +783,11 @@ async function fetchReportByDate() {
 
         const historyRef = window.dbRef(window.firebaseDb, 'ppic_reports/history');
         const historySnapshot = await window.dbGet(historyRef);
-        
+
         if (historySnapshot.exists()) {
             const historyData = historySnapshot.val();
             const availableDates = Object.keys(historyData).sort();
-            
+
             let fallbackDate = null;
             for (let i = availableDates.length - 1; i >= 0; i--) {
                 if (availableDates[i] <= selectedDate) {
@@ -967,8 +1044,8 @@ function processMultipleSAPData(fileContentsArray) {
     let rawParsedRows = [];
     let uniqueMaterialsSet = new Set();
     let stockMergeMap = {};
-    let codeMappingRules = {}; 
-    let pureAvgSaleStore = {}; 
+    let codeMappingRules = {};
+    let pureAvgSaleStore = {};
 
     fileContentsArray.forEach(rawData => {
         const lines = rawData.trim().split('\n');
@@ -1058,7 +1135,7 @@ function processMultipleSAPData(fileContentsArray) {
                     mfgBatch: 'N/A', mfgQty: 0, mfgDate: 'N/A', mfgDateTimestamp: 0, avgSale: 0, plantName: '-', batchSize: 0, remark: '', merged: false
                 };
             }
-            
+
             if (desc) stockMergeMap[code].desc = desc;
             if (batchSize > 0) stockMergeMap[code].batchSize = batchSize;
             if (plantStock) stockMergeMap[code].plantStock += plantStock;
@@ -1066,11 +1143,11 @@ function processMultipleSAPData(fileContentsArray) {
             if (processOrder) stockMergeMap[code].processOrder += processOrder;
             if (underTest) stockMergeMap[code].underTest += underTest;
             if (sapPlanned) stockMergeMap[code].sapPlanned += sapPlanned;
-            
+
             if (avgSale > 0 && (!pureAvgSaleStore[code] || avgSaleIdx !== -1)) {
                 pureAvgSaleStore[code] = avgSale;
             }
-            
+
             if (mfgDate || mfgBatch) {
                 const currentTimestamp = parseDateVal(mfgDate);
                 if (currentTimestamp > stockMergeMap[code].mfgDateTimestamp || stockMergeMap[code].mfgDateTimestamp === 0) {
@@ -1109,7 +1186,7 @@ function processMultipleSAPData(fileContentsArray) {
             stockMergeMap[newCode].whStock += stockMergeMap[oldCode].whStock;
             stockMergeMap[newCode].processOrder += stockMergeMap[oldCode].processOrder;
             stockMergeMap[newCode].underTest += stockMergeMap[oldCode].underTest;
-            
+
             const oldSaleVal = pureAvgSaleStore[oldCode] || 0;
             const newSaleVal = pureAvgSaleStore[newCode] || 0;
             stockMergeMap[newCode].avgSale = oldSaleVal + newSaleVal;
@@ -1121,8 +1198,8 @@ function processMultipleSAPData(fileContentsArray) {
             stockMergeMap[oldCode].whStock = 0;
             stockMergeMap[oldCode].processOrder = 0;
             stockMergeMap[oldCode].underTest = 0;
-            stockMergeMap[oldCode].avgSale = 0; 
-            stockMergeMap[oldCode].sapPlanned = 0; 
+            stockMergeMap[oldCode].avgSale = 0;
+            stockMergeMap[oldCode].sapPlanned = 0;
             stockMergeMap[oldCode].remark = `Replaced by new code: ${newCode}`;
             stockMergeMap[oldCode].merged = true;
         }
@@ -1176,7 +1253,7 @@ function renderTable() {
     const filterDescVal = document.getElementById('filterDesc').value.trim().toUpperCase();
     const filterPlantVal = document.getElementById('filterPlant').value;
     const filterStatusVal = document.getElementById('filterStatus').value;
-    
+
     let rowsToDisplay = generatedReportRows;
 
     if (filterCodeVal) {
@@ -1225,8 +1302,8 @@ function renderTable() {
             const displayAvgSale = Math.round(row.avgSale).toLocaleString('en-US');
             const displayMfgQty = Math.round(row.mfgQty).toLocaleString('en-US');
             const displayRecommended = `<strong style="color:var(--accent-blue); font-size:13.5px;">${Math.round(row.recommended).toLocaleString('en-US')}</strong>`;
-            const displayNeedPlannedQty = row.needPlannedQty > 0 
-                ? `<span class="badge-need-planned">${Math.round(row.needPlannedQty).toLocaleString('en-US')}</span>` 
+            const displayNeedPlannedQty = row.needPlannedQty > 0
+                ? `<span class="badge-need-planned">${Math.round(row.needPlannedQty).toLocaleString('en-US')}</span>`
                 : '0';
             const displayPlanBatchNeed = row.planBatchNeed > 0
                 ? `<span class="badge-batch-need">${row.planBatchNeed.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} Batch(es)</span>`
@@ -1363,7 +1440,7 @@ function exportProcessedData() {
         excelHTML += `<tr class="${rowBgClass}">`;
 
         if (isGroupStart) {
-            const formattedBatchNeed = row.planBatchNeed > 0 
+            const formattedBatchNeed = row.planBatchNeed > 0
                 ? row.planBatchNeed.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
                 : '0';
 
@@ -1415,4 +1492,4 @@ function exportProcessedData() {
 }
 </script>
 </body>
-</h
+</html>
