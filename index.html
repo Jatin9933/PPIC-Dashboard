@@ -6,6 +6,26 @@
 <meta name="description" content="PPIC Unified Material Control Matrix — internal production planning and reorder analytics dashboard.">
 <meta name="robots" content="noindex, nofollow">
 <title>PPIC - Unified Material Control Matrix (Executive Edition)</title>
+
+<!-- PWA: installable app manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e3a8a">
+
+<!-- Desktop / Android install icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="shortcut icon" href="icons/favicon.ico">
+
+<!-- iOS "Add to Home Screen" support -->
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PPIC Matrix">
+
+<!-- Windows tile -->
+<meta name="msapplication-TileColor" content="#1e3a8a">
+<meta name="msapplication-TileImage" content="icons/icon-144.png">
+
 <style>
     :root {
         --bg-main: #f8fafc;
@@ -352,6 +372,76 @@
     .close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); transition: color 0.2s; }
     .close-btn:hover { color: var(--text-main); }
     .template-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+
+    .install-btn { display: none; }
+    .install-btn.visible { display: inline-flex; }
+
+    /* ===================== MOBILE / SMALL SCREEN OPTIMIZATION ===================== */
+    @media (max-width: 768px) {
+        body { padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+
+        .auth-card { padding: 24px 20px; width: 100%; border-radius: 12px; }
+        .auth-card h2 { font-size: 20px; }
+
+        .header-panel {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px 18px;
+            gap: 12px;
+        }
+        .title-section h1 { font-size: 18px; }
+        .title-section p { font-size: 12px; }
+        .user-session-badge, .last-update-badge { font-size: 11px; padding: 4px 9px; }
+        .last-update-badge { margin-left: 0; margin-top: 6px; display: inline-flex; }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+        .controls-section .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 11px 8px;
+            font-size: 12px;
+        }
+        .controls-section input[type="date"],
+        .controls-section select {
+            grid-column: span 3;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px !important;
+            font-size: 13px !important;
+        }
+
+        .drop-zone { padding: 18px 12px; border-radius: 10px; }
+        .drop-zone #uploadLabel { font-size: 13px; }
+
+        .table-responsive { max-height: 65vh; border-radius: 10px; }
+        th, td { padding: 9px 10px; font-size: 12px; }
+        thead tr:nth-child(2) th, thead tr.filter-row th, .filter-row { top: 38px; }
+
+        .modal-content { padding: 20px; width: 92%; }
+    }
+
+    @media (max-width: 420px) {
+        .controls-section { grid-template-columns: repeat(2, 1fr); }
+        .controls-section input[type="date"],
+        .controls-section select { grid-column: span 2; }
+        .title-section h1 { font-size: 16px; }
+    }
+
+    /* Larger tap targets on touch devices */
+    @media (hover: none) and (pointer: coarse) {
+        .btn, .auth-btn, input, select { min-height: 42px; }
+        .close-btn { min-width: 40px; min-height: 40px; }
+    }
+
+    /* Respect notches / safe areas when installed standalone (PWA) */
+    @media (display-mode: standalone) {
+        body { padding-top: max(20px, env(safe-area-inset-top)); }
+    }
 </style>
 </head>
 <body>
@@ -402,6 +492,7 @@
             <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save Cloud</button>
             <button class="btn btn-warning" onclick="reloadUploadedFiles()">🔄 Refresh</button>
             <button class="btn btn-primary" onclick="exportProcessedData()">📊 Export</button>
+            <button class="btn btn-secondary install-btn" id="installAppBtn" onclick="triggerInstallPrompt()" title="Install as desktop/mobile app">⬇️ Install App</button>
             <button class="btn btn-danger" onclick="logoutUser()" style="padding: 9px 12px;" title="Logout">🚪</button>
             <select id="themeSelect" onchange="changeTheme(this.value)" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
                 <option value="default">Light Theme</option>
@@ -1489,6 +1580,44 @@ function exportProcessedData() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+/* ===================== PWA: install prompt + service worker ===================== */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Chrome/Edge (desktop & Android) fire this when the app is installable
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById('installAppBtn');
+    if (btn) btn.classList.add('visible');
+});
+
+function triggerInstallPrompt() {
+    const btn = document.getElementById('installAppBtn');
+    if (!deferredInstallPrompt) {
+        alert("This app is either already installed, or your browser doesn't support one-click install here.\n\nOn iPhone/iPad: use Share → 'Add to Home Screen'.\nOn desktop Chrome/Edge: use the install icon in the address bar.");
+        return;
+    }
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.finally(() => {
+        deferredInstallPrompt = null;
+        if (btn) btn.classList.remove('visible');
+    });
+}
+
+window.addEventListener('appinstalled', () => {
+    const btn = document.getElementById('installAppBtn');
+    if (btn) btn.classList.remove('visible');
+    deferredInstallPrompt = null;
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch((err) => {
+            console.warn('Service worker registration failed:', err);
+        });
+    });
 }
 </script>
 </body>
