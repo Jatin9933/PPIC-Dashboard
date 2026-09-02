@@ -374,7 +374,142 @@
     .template-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
 
     .install-btn { display: none; }
-    .install-btn.visible { display: inline-flex; }
+    .install-btn.visible { display: flex; }
+
+    .corner-install-btn {
+        position: fixed;
+        top: 18px;
+        right: 20px;
+        z-index: 9998;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        color: #ffffff;
+        border: none;
+        font-size: 17px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-lg);
+        transition: all 0.2s ease;
+        animation: pulseGlow 2.2s infinite;
+    }
+    .corner-install-btn:hover { background: var(--accent-hover); transform: translateY(-2px) scale(1.06); }
+
+    /* ===================== DATE PICKER / CALENDAR POPOVER ===================== */
+    .date-picker-wrap { position: relative; display: inline-block; }
+
+    .calendar-popover {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 280px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        padding: 14px;
+        z-index: 500;
+        animation: fadeIn 0.15s ease-out;
+    }
+    .calendar-popover.open { display: block; }
+
+    .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text-main);
+    }
+    .cal-nav-btn {
+        background: none;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        width: 26px;
+        height: 26px;
+        cursor: pointer;
+        font-size: 15px;
+        color: var(--text-main);
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+    .cal-nav-btn:hover { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+    }
+
+    .cal-day {
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 7px;
+        cursor: pointer;
+        color: var(--text-main);
+        background: var(--bg-main);
+        border: 1.5px solid transparent;
+        transition: all 0.12s ease;
+    }
+    .cal-day:hover { transform: scale(1.08); border-color: var(--accent-blue); }
+
+    .cal-day.other-month { opacity: 0.28; cursor: default; }
+    .cal-day.other-month:hover { transform: none; border-color: transparent; }
+
+    .cal-day.has-data { background: #d1fae5; color: #065f46; }
+    .cal-day.no-data { background: #fee2e2; color: #991b1b; }
+    .cal-day.future { background: var(--bg-main); color: var(--text-muted); }
+
+    [data-theme="dark"] .cal-day.has-data { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; }
+    [data-theme="dark"] .cal-day.no-data { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
+
+    .cal-day.today { border-color: var(--accent-blue); box-shadow: 0 0 0 1px var(--accent-blue) inset; }
+    .cal-day.selected { border-color: #0f172a; box-shadow: 0 0 0 2px var(--accent-blue); }
+    [data-theme="dark"] .cal-day.selected { border-color: #f8fafc; }
+
+    .calendar-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-color);
+        font-size: 10.5px;
+        color: var(--text-muted);
+    }
+    .calendar-legend .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+    .dot-green { background: #10b981; }
+    .dot-red { background: #ef4444; }
+    .dot-gray { background: #94a3b8; }
 
     /* ===================== MOBILE / SMALL SCREEN OPTIMIZATION ===================== */
     @media (max-width: 768px) {
@@ -423,12 +558,19 @@
         thead tr:nth-child(2) th, thead tr.filter-row th, .filter-row { top: 38px; }
 
         .modal-content { padding: 20px; width: 92%; }
+
+        .corner-install-btn { top: 12px; right: 12px; width: 40px; height: 40px; font-size: 15px; }
+
+        .date-picker-wrap { grid-column: span 3; }
+        .date-picker-wrap #dateSelectBtn { width: 100%; }
+        .calendar-popover { left: 50%; transform: translateX(-50%); width: min(300px, 90vw); }
     }
 
     @media (max-width: 420px) {
         .controls-section { grid-template-columns: repeat(2, 1fr); }
         .controls-section input[type="date"],
         .controls-section select { grid-column: span 2; }
+        .date-picker-wrap { grid-column: span 2; }
         .title-section h1 { font-size: 16px; }
     }
 
@@ -486,13 +628,32 @@
             </div>
         </div>
         <div class="controls-section">
+            <button class="btn btn-info" onclick="openUploadModal()">📁 Upload Files</button>
             <button class="btn btn-info" onclick="openTemplateModal()">📥 Templates</button>
-            <input type="date" id="firebaseDatePicker" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
-            <button class="btn btn-primary" onclick="fetchReportByDate()">📅 Fetch Date</button>
+
+            <div class="date-picker-wrap" id="datePickerWrap">
+                <button class="btn btn-primary" id="dateSelectBtn" onclick="toggleCalendarPopover()">📅 <span id="dateSelectLabel">Fetch Date</span></button>
+                <div class="calendar-popover" id="calendarPopover">
+                    <div class="calendar-header">
+                        <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(-1)">&#8249;</button>
+                        <span id="calendarMonthLabel">—</span>
+                        <button type="button" class="cal-nav-btn" onclick="shiftCalendarMonth(1)">&#8250;</button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                    <div class="calendar-legend">
+                        <span><i class="dot dot-green"></i> Data saved</span>
+                        <span><i class="dot dot-red"></i> No data</span>
+                        <span><i class="dot dot-gray"></i> Upcoming</span>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn btn-success" onclick="saveToFirebaseWithDate()">☁️ Save Cloud</button>
             <button class="btn btn-warning" onclick="reloadUploadedFiles()">🔄 Refresh</button>
             <button class="btn btn-primary" onclick="exportProcessedData()">📊 Export</button>
-            <button class="btn btn-secondary install-btn" id="installAppBtn" onclick="triggerInstallPrompt()" title="Install as desktop/mobile app">⬇️ Install App</button>
             <button class="btn btn-danger" onclick="logoutUser()" style="padding: 9px 12px;" title="Logout">🚪</button>
             <select id="themeSelect" onchange="changeTheme(this.value)" style="padding: 7px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 13px;">
                 <option value="default">Light Theme</option>
@@ -501,10 +662,20 @@
         </div>
     </div>
 
-    <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileUpload()">
-        <div id="uploadLabel">
-            <span style="font-weight: 600; color: var(--accent-blue);">📁 Click to Upload SAP Files / Templates</span> or Drag &amp; Drop multiple data files here
+    <button class="corner-install-btn install-btn" id="installAppBtn" onclick="triggerInstallPrompt()" title="Install App to this device">⬇️</button>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📁 Upload SAP Files / Templates</h3>
+                <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+            </div>
+            <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileUpload()">
+                <div id="uploadLabel">
+                    <span style="font-weight: 600; color: var(--accent-blue);">📁 Click to Upload SAP Files / Templates</span> or Drag &amp; Drop multiple data files here
+                </div>
+            </div>
         </div>
     </div>
 
@@ -604,6 +775,7 @@
 
     window.firebaseDb = database;
     window.firebaseAuth = auth;
+    window.firebaseDatabaseURL = firebaseConfig.databaseURL;
     window.dbRef = ref;
     window.dbSet = set;
     window.dbGet = get;
@@ -669,6 +841,7 @@
             overlay.style.display = 'none';
             document.getElementById('loggedInUserText').innerText = user.email;
             loadFromFirebase();
+            if (typeof loadCalendarDataDates === 'function') loadCalendarDataDates(true);
             initInactivityTimer();
         } catch (err) {
             console.error("Session init error:", err);
@@ -803,6 +976,13 @@ function logoutUser() {
 function openTemplateModal() { document.getElementById('templateModal').style.display = 'flex'; }
 function closeTemplateModal() { document.getElementById('templateModal').style.display = 'none'; }
 
+function openUploadModal() {
+    document.getElementById('uploadModal').style.display = 'flex';
+}
+function closeUploadModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+}
+
 function downloadTemplate(type) {
     let headers = [];
     let sampleData = [];
@@ -852,9 +1032,9 @@ function updateLastModifiedTimeDisplay(isoString) {
     }
 }
 
-async function fetchReportByDate() {
-    const selectedDate = document.getElementById('firebaseDatePicker').value;
-    if (!selectedDate) { alert("⚠️ Please select a date first!"); return; }
+async function fetchReportByDate(dateOverride) {
+    const selectedDate = dateOverride || selectedCalendarDate;
+    if (!selectedDate) { alert("⚠️ Please pick a date from the calendar first!"); return; }
     if (!window.firebaseDb) { alert("❌ Firebase is not initialized."); return; }
 
     const exactDatePath = `ppic_reports/history/${selectedDate}`;
@@ -867,6 +1047,7 @@ async function fetchReportByDate() {
                 updateTableFilterDropdowns();
                 renderTable();
                 updateLastModifiedTimeDisplay(val.lastUpdated);
+                setSelectedCalendarDate(selectedDate);
                 alert(`✅ Successfully loaded report for exact date: ${selectedDate}`);
                 return;
             }
@@ -897,12 +1078,13 @@ async function fetchReportByDate() {
                 renderTable();
                 updateLastModifiedTimeDisplay(historyData[fallbackDate].lastUpdated);
                 alert(`⚠️ Data not found for ${selectedDate}. Automatically loaded closest back-date data from: ${fallbackDate}`);
-                document.getElementById('firebaseDatePicker').value = fallbackDate;
+                setSelectedCalendarDate(fallbackDate);
                 return;
             }
         }
 
         alert(`❌ No report found in Firebase for date: ${selectedDate} or any prior back-date. Falling back to 'latest'.`);
+        setSelectedCalendarDate(selectedDate);
         loadFromFirebase();
 
     } catch (error) {
@@ -927,7 +1109,121 @@ function saveToFirebaseWithDate() {
     ]).then(() => {
         updateLastModifiedTimeDisplay(currentTimestampISO);
         alert("✅ Dynamic Report Matrix saved to Firebase Cloud successfully!");
+        // Mark today green on the calendar immediately, without waiting for a refetch.
+        calendarDataDates.add(todayDateStr);
+        setSelectedCalendarDate(todayDateStr);
     }).catch((error) => { alert("❌ Firebase Error: " + error.message); });
+}
+
+/* ===================== CALENDAR DATE PICKER (green = data saved, red = no data) ===================== */
+let calendarViewYear = new Date().getFullYear();
+let calendarViewMonth = new Date().getMonth(); // 0-indexed
+let calendarDataDates = new Set();   // 'YYYY-MM-DD' strings that have a saved report
+let calendarDatesLoaded = false;
+let selectedCalendarDate = null;     // 'YYYY-MM-DD'
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function toDateStr(y, m, d) { return `${y}-${pad2(m + 1)}-${pad2(d)}`; }
+function todayDateStr() { const t = new Date(); return toDateStr(t.getFullYear(), t.getMonth(), t.getDate()); }
+
+function setSelectedCalendarDate(dateStr) {
+    selectedCalendarDate = dateStr;
+    const label = document.getElementById('dateSelectLabel');
+    if (label) label.innerText = dateStr;
+    renderCalendarGrid();
+}
+
+async function loadCalendarDataDates(force) {
+    if (calendarDatesLoaded && !force) return;
+    if (!window.firebaseAuth || !window.firebaseAuth.currentUser) return;
+    try {
+        const token = await window.firebaseAuth.currentUser.getIdToken();
+        const url = `${window.firebaseDatabaseURL}/ppic_reports/history.json?shallow=true&auth=${token}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        calendarDataDates = new Set(data ? Object.keys(data) : []);
+        calendarDatesLoaded = true;
+    } catch (err) {
+        console.error("Failed to load calendar history dates:", err);
+    }
+}
+
+function toggleCalendarPopover() {
+    const pop = document.getElementById('calendarPopover');
+    if (pop.classList.contains('open')) {
+        closeCalendarPopover();
+        return;
+    }
+    const base = selectedCalendarDate ? new Date(selectedCalendarDate + 'T00:00:00') : new Date();
+    calendarViewYear = base.getFullYear();
+    calendarViewMonth = base.getMonth();
+    renderCalendarGrid();
+    pop.classList.add('open');
+    loadCalendarDataDates(true).then(renderCalendarGrid);
+    setTimeout(() => document.addEventListener('click', handleOutsideCalendarClick), 0);
+}
+
+function closeCalendarPopover() {
+    document.getElementById('calendarPopover').classList.remove('open');
+    document.removeEventListener('click', handleOutsideCalendarClick);
+}
+
+function handleOutsideCalendarClick(e) {
+    const wrap = document.getElementById('datePickerWrap');
+    if (wrap && !wrap.contains(e.target)) closeCalendarPopover();
+}
+
+function shiftCalendarMonth(delta) {
+    calendarViewMonth += delta;
+    if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear--; }
+    if (calendarViewMonth > 11) { calendarViewMonth = 0; calendarViewYear++; }
+    renderCalendarGrid();
+}
+
+function renderCalendarGrid() {
+    const grid = document.getElementById('calendarGrid');
+    const label = document.getElementById('calendarMonthLabel');
+    if (!grid || !label) return;
+
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    label.innerText = `${monthNames[calendarViewMonth]} ${calendarViewYear}`;
+
+    const firstDay = new Date(calendarViewYear, calendarViewMonth, 1);
+    const startWeekday = firstDay.getDay();
+    const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(calendarViewYear, calendarViewMonth, 0).getDate();
+    const tStr = todayDateStr();
+
+    let html = '';
+    for (let i = startWeekday - 1; i >= 0; i--) {
+        html += `<div class="cal-day other-month">${daysInPrevMonth - i}</div>`;
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = toDateStr(calendarViewYear, calendarViewMonth, d);
+        let cls = 'cal-day';
+        if (dateStr === tStr) cls += ' today';
+        if (dateStr === selectedCalendarDate) cls += ' selected';
+        if (dateStr > tStr) {
+            cls += ' future';
+        } else if (calendarDataDates.has(dateStr)) {
+            cls += ' has-data';
+        } else {
+            cls += ' no-data';
+        }
+        html += `<div class="${cls}" onclick="pickCalendarDate('${dateStr}')" title="${dateStr}">${d}</div>`;
+    }
+    const totalCells = startWeekday + daysInMonth;
+    const trailing = (7 - (totalCells % 7)) % 7;
+    for (let d = 1; d <= trailing; d++) {
+        html += `<div class="cal-day other-month">${d}</div>`;
+    }
+    grid.innerHTML = html;
+}
+
+function pickCalendarDate(dateStr) {
+    setSelectedCalendarDate(dateStr);
+    closeCalendarPopover();
+    fetchReportByDate(dateStr);
 }
 
 function loadFromFirebase() {
@@ -992,6 +1288,7 @@ function handleFileUpload() {
             <span class="sub-text">Click 'Refresh' anytime to re-process files in memory</span>
         `;
         processMultipleSAPData(cachedFileContents);
+        setTimeout(closeUploadModal, 1200);
     });
 }
 
